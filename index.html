@@ -111,10 +111,13 @@
       padding: 11px 13px;
       border: 2px solid #e8e8e8;
       border-radius: 10px;
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       outline: none;
       transition: border-color 0.2s;
       color: #1a1a2e;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     input:focus { border-color: #3b82f6; }
 
@@ -363,6 +366,14 @@
       font-weight: 700;
       cursor: pointer;
       text-align: center;
+    }
+    .collapse-link {
+      text-align: center;
+      padding: 10px 0 2px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #2563eb;
+      cursor: pointer;
     }
 
     /* ---- WINNER SELECTOR ---- */
@@ -760,15 +771,16 @@ function renderGoalsRanking() {
   }
   const sorted = calcGoals();
   const visible = renderRankingItems(sorted, rankingExpanded.goals);
+  const collapseLink = rankingExpanded.goals
+    ? `<div class="collapse-link" onclick="toggleRanking('goals')">Ver menos ▴</div>` : '';
   el.innerHTML = visible.map(([name, g], i) => `
     <div class="ranking-item">
       <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
       <div class="rank-name">${escHtml(name)}</div>
       <div class="rank-value">${g} ⚽</div>
     </div>
-  `).join('');
-  btn.style.display = sorted.length > RANKING_DEFAULT ? 'block' : 'none';
-  btn.textContent = rankingExpanded.goals ? 'Ver menos ▴' : 'Ver todos ▾';
+  `).join('') + collapseLink;
+  btn.style.display = !rankingExpanded.goals && sorted.length > RANKING_DEFAULT ? 'block' : 'none';
 }
 
 function renderWinsRanking() {
@@ -781,15 +793,16 @@ function renderWinsRanking() {
   }
   const sorted = calcWins();
   const visible = renderRankingItems(sorted, rankingExpanded.wins);
+  const collapseLink = rankingExpanded.wins
+    ? `<div class="collapse-link" onclick="toggleRanking('wins')">Ver menos ▴</div>` : '';
   el.innerHTML = visible.map(([name, w, played], i) => `
     <div class="ranking-item">
       <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
       <div class="rank-name">${escHtml(name)}</div>
       <div class="rank-value">${w} 🏆 <span style="font-size:0.75rem;color:#aaa;font-weight:400">${played > 0 ? '('+played+' jug.)' : ''}</span></div>
     </div>
-  `).join('');
-  btn.style.display = sorted.length > RANKING_DEFAULT ? 'block' : 'none';
-  btn.textContent = rankingExpanded.wins ? 'Ver menos ▴' : 'Ver todos ▾';
+  `).join('') + collapseLink;
+  btn.style.display = !rankingExpanded.wins && sorted.length > RANKING_DEFAULT ? 'block' : 'none';
 }
 
 function renderSummary() {
