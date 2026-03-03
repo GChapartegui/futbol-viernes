@@ -419,13 +419,13 @@
   <div class="card">
     <div class="card-title">🏆 Más partidos ganados</div>
     <div id="wins-ranking"></div>
-    <button class="expand-btn" id="wins-expand-btn" onclick="expandRanking('wins')" style="display:none">Ver todos ▾</button>
+    <button class="expand-btn" id="wins-expand-btn" onclick="toggleRanking('wins')" style="display:none">Ver todos ▾</button>
   </div>
 
   <div class="card">
     <div class="card-title">⚽ Goleadores del año</div>
     <div id="goals-ranking"></div>
-    <button class="expand-btn" id="goals-expand-btn" onclick="expandRanking('goals')" style="display:none">Ver todos ▾</button>
+    <button class="expand-btn" id="goals-expand-btn" onclick="toggleRanking('goals')" style="display:none">Ver todos ▾</button>
   </div>
 
   <div class="card">
@@ -744,8 +744,8 @@ function renderRankingItems(items, expanded) {
   return expanded ? items : items.slice(0, RANKING_DEFAULT);
 }
 
-function expandRanking(type) {
-  rankingExpanded[type] = true;
+function toggleRanking(type) {
+  rankingExpanded[type] = !rankingExpanded[type];
   if (type === 'goals') renderGoalsRanking();
   else renderWinsRanking();
 }
@@ -767,7 +767,8 @@ function renderGoalsRanking() {
       <div class="rank-value">${g} ⚽</div>
     </div>
   `).join('');
-  btn.style.display = (!rankingExpanded.goals && sorted.length > RANKING_DEFAULT) ? 'block' : 'none';
+  btn.style.display = sorted.length > RANKING_DEFAULT ? 'block' : 'none';
+  btn.textContent = rankingExpanded.goals ? 'Ver menos ▴' : 'Ver todos ▾';
 }
 
 function renderWinsRanking() {
@@ -787,7 +788,8 @@ function renderWinsRanking() {
       <div class="rank-value">${w} 🏆 <span style="font-size:0.75rem;color:#aaa;font-weight:400">${played > 0 ? '('+played+' jug.)' : ''}</span></div>
     </div>
   `).join('');
-  btn.style.display = (!rankingExpanded.wins && sorted.length > RANKING_DEFAULT) ? 'block' : 'none';
+  btn.style.display = sorted.length > RANKING_DEFAULT ? 'block' : 'none';
+  btn.textContent = rankingExpanded.wins ? 'Ver menos ▴' : 'Ver todos ▾';
 }
 
 function renderSummary() {
