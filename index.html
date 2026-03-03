@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>⚽ Fútbol Viernes</title>
+  <title>⚽ Fútbol Elite</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -15,7 +15,7 @@
     }
 
     header {
-      background: linear-gradient(135deg, #1a472a, #2d6a4f);
+      background: linear-gradient(135deg, #2d9e5f, #52c788);
       color: white;
       padding: 18px 20px 14px;
       text-align: center;
@@ -25,7 +25,7 @@
 
     nav {
       display: flex;
-      background: #145a32;
+      background: #27ae60;
       position: sticky;
       top: 0;
       z-index: 10;
@@ -45,7 +45,7 @@
     }
     nav button.active {
       color: white;
-      border-bottom-color: #74c69d;
+      border-bottom-color: #a8f0c6;
     }
 
     .tab { display: none; padding: 16px; max-width: 500px; margin: 0 auto; }
@@ -62,7 +62,7 @@
     .card-title {
       font-size: 0.9rem;
       font-weight: 700;
-      color: #1a472a;
+      color: #27ae60;
       margin-bottom: 13px;
       display: flex;
       align-items: center;
@@ -92,7 +92,7 @@
     .pos-other { background: #f0f0f0; color: #888; }
 
     .rank-name { flex: 1; font-size: 0.9rem; font-weight: 500; }
-    .rank-value { font-weight: 700; color: #1a472a; font-size: 0.95rem; }
+    .rank-value { font-weight: 700; color: #27ae60; font-size: 0.95rem; }
 
     /* ---- FORMS ---- */
     .form-group { margin-bottom: 14px; }
@@ -116,13 +116,13 @@
       transition: border-color 0.2s;
       color: #1a1a2e;
     }
-    input:focus { border-color: #52b788; }
+    input:focus { border-color: #2ecc71; }
 
     .btn-primary {
       display: block;
       width: 100%;
       padding: 14px;
-      background: #1a472a;
+      background: #27ae60;
       color: white;
       border: none;
       border-radius: 12px;
@@ -131,15 +131,15 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-    .btn-primary:hover { background: #145a32; }
+    .btn-primary:hover { background: #219a52; }
     .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
 
     .btn-sm {
       padding: 8px 16px;
       border-radius: 8px;
-      border: 2px solid #1a472a;
+      border: 2px solid #27ae60;
       background: none;
-      color: #1a472a;
+      color: #27ae60;
       font-size: 0.82rem;
       font-weight: 700;
       cursor: pointer;
@@ -221,9 +221,9 @@
     .counter button {
       width: 32px; height: 32px;
       border-radius: 50%;
-      border: 2px solid #1a472a;
+      border: 2px solid #27ae60;
       background: none;
-      color: #1a472a;
+      color: #27ae60;
       font-size: 1.1rem;
       font-weight: 700;
       cursor: pointer;
@@ -349,12 +349,45 @@
     }
     .alert-info { background: #e0f2fe; color: #0369a1; }
     .alert-warn { background: #fef9c3; color: #92400e; }
+
+    /* ---- WINNER SELECTOR ---- */
+    .winner-selector {
+      display: flex;
+      gap: 8px;
+    }
+    .winner-btn {
+      flex: 1;
+      padding: 14px 6px;
+      border-radius: 12px;
+      border: 2px solid #e0e0e0;
+      background: #f8f8f8;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: #555;
+    }
+    .winner-btn.selected-a {
+      background: #dbeafe;
+      border-color: #1d4ed8;
+      color: #1d4ed8;
+    }
+    .winner-btn.selected-draw {
+      background: #f0fdf4;
+      border-color: #27ae60;
+      color: #27ae60;
+    }
+    .winner-btn.selected-b {
+      background: #fee2e2;
+      border-color: #b91c1c;
+      color: #b91c1c;
+    }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>⚽ Fútbol Viernes</h1>
+  <h1>⚽ Fútbol Elite</h1>
   <p>Ranking del grupo</p>
 </header>
 
@@ -415,17 +448,11 @@
     </div>
 
     <div class="card">
-      <div class="card-title">📊 Resultado actual</div>
-      <div class="score-summary">
-        <div class="score-box a">
-          <div class="num" id="live-score-a">0</div>
-          <div class="lbl">Equipo Azul</div>
-        </div>
-        <div class="vs">—</div>
-        <div class="score-box b">
-          <div class="num" id="live-score-b">0</div>
-          <div class="lbl">Equipo Rojo</div>
-        </div>
+      <div class="card-title">🏆 ¿Quién ganó?</div>
+      <div class="winner-selector">
+        <button id="btn-win-a" class="winner-btn" onclick="selectWinner('a')">🔵 Azul</button>
+        <button id="btn-win-draw" class="winner-btn" onclick="selectWinner('draw')">🤝 Empate</button>
+        <button id="btn-win-b" class="winner-btn" onclick="selectWinner('b')">🔴 Rojo</button>
       </div>
     </div>
 
@@ -466,15 +493,27 @@
 // ============================================================
 let db = { players: [], matches: [] };
 
+const DEFAULT_PLAYERS = [
+  'Gordo Goñi', 'Fede Punos', 'Fede Uberlhart', 'Francisco Goñi',
+  'Fran', 'Roche', 'Gordo Impieri', 'Ivo Sucari',
+  'Joaco', 'Juan', 'Juan Ignacio', 'Justo',
+  'Lucho', 'Marc', 'Nachito', 'Nico',
+  'Paul', 'Toto', 'Chapa'
+];
+
 function loadDB() {
   try {
-    const saved = localStorage.getItem('futbol-viernes-v1');
+    const saved = localStorage.getItem('futbol-elite-v1');
     if (saved) db = JSON.parse(saved);
   } catch(e) {}
+  if (db.players.length === 0) {
+    db.players = [...DEFAULT_PLAYERS];
+    saveDB();
+  }
 }
 
 function saveDB() {
-  localStorage.setItem('futbol-viernes-v1', JSON.stringify(db));
+  localStorage.setItem('futbol-elite-v1', JSON.stringify(db));
 }
 
 // ============================================================
@@ -534,10 +573,10 @@ function renderPlayers() {
 // ============================================================
 //  NEW MATCH STATE
 // ============================================================
-let teamA = [], teamB = [], goalCounts = {};
+let teamA = [], teamB = [], goalCounts = {}, selectedWinner = null;
 
 function initNewMatch() {
-  teamA = []; teamB = []; goalCounts = {};
+  teamA = []; teamB = []; goalCounts = {}; selectedWinner = null;
   document.getElementById('match-date').value = todayStr();
   renderPlayersSelector();
   document.getElementById('goals-section').style.display = 'none';
@@ -595,7 +634,6 @@ function checkTeamsReady() {
 function renderCounters() {
   renderTeamCounters('team-a-counters', teamA, 'a');
   renderTeamCounters('team-b-counters', teamB, 'b');
-  updateLiveScore();
 }
 
 function renderTeamCounters(containerId, players, team) {
@@ -616,42 +654,35 @@ function changeGoal(team, idx, delta) {
   const p = players[idx];
   goalCounts[p] = Math.max(0, (goalCounts[p] || 0) + delta);
   document.getElementById(`gc-${team}-${idx}`).textContent = goalCounts[p];
-  updateLiveScore();
 }
 
-function updateLiveScore() {
-  const sA = teamA.reduce((s, p) => s + (goalCounts[p] || 0), 0);
-  const sB = teamB.reduce((s, p) => s + (goalCounts[p] || 0), 0);
-  document.getElementById('live-score-a').textContent = sA;
-  document.getElementById('live-score-b').textContent = sB;
+function selectWinner(team) {
+  selectedWinner = team;
+  document.querySelectorAll('.winner-btn').forEach(b => b.className = 'winner-btn');
+  document.getElementById('btn-win-a').classList.toggle('selected-a', team === 'a');
+  document.getElementById('btn-win-draw').classList.toggle('selected-draw', team === 'draw');
+  document.getElementById('btn-win-b').classList.toggle('selected-b', team === 'b');
 }
 
 function saveMatch() {
   const date = document.getElementById('match-date').value;
   if (!date) { alert('Seleccioná una fecha.'); return; }
   if (teamA.length === 0 || teamB.length === 0) { alert('Armá los dos equipos.'); return; }
-
-  const sA = teamA.reduce((s, p) => s + (goalCounts[p] || 0), 0);
-  const sB = teamB.reduce((s, p) => s + (goalCounts[p] || 0), 0);
-
-  if (sA === sB) {
-    if (!confirm(`El resultado es ${sA}–${sB} (empate). ¿Guardarlo igual?`)) return;
-  }
+  if (!selectedWinner) { alert('Seleccioná quién ganó el partido.'); return; }
 
   db.matches.push({
     id: Date.now(),
     date,
     teamA: [...teamA],
     teamB: [...teamB],
-    scoreA: sA,
-    scoreB: sB,
+    winner: selectedWinner,
     goalCounts: { ...goalCounts }
   });
 
   saveDB();
 
-  const winner = sA > sB ? '🔵 Equipo Azul' : sB > sA ? '🔴 Equipo Rojo' : '🤝 Empate';
-  alert(`✅ Partido guardado!\n\n🔵 Azul ${sA} — ${sB} Rojo 🔴\n\n${winner}`);
+  const winnerLabel = selectedWinner === 'a' ? '🔵 Ganó Azul' : selectedWinner === 'b' ? '🔴 Ganó Rojo' : '🤝 Empate';
+  alert(`✅ Partido guardado!\n\n${winnerLabel}`);
   initNewMatch();
 }
 
@@ -680,8 +711,8 @@ function calcWins() {
   db.players.forEach(p => { wins[p] = 0; played[p] = 0; });
   db.matches.forEach(m => {
     [...m.teamA, ...m.teamB].forEach(p => { played[p] = (played[p] || 0) + 1; });
-    if (m.scoreA === m.scoreB) return;
-    const winners = m.scoreA > m.scoreB ? m.teamA : m.teamB;
+    if (!m.winner || m.winner === 'draw') return;
+    const winners = m.winner === 'a' ? m.teamA : m.teamB;
     winners.forEach(p => { wins[p] = (wins[p] || 0) + 1; });
   });
   return Object.entries(wins)
@@ -724,8 +755,8 @@ function renderWinsRanking() {
 function renderSummary() {
   const el = document.getElementById('summary');
   const total = db.matches.length;
-  const draws = db.matches.filter(m => m.scoreA === m.scoreB).length;
-  const totalGoals = db.matches.reduce((s, m) => s + m.scoreA + m.scoreB, 0);
+  const draws = db.matches.filter(m => m.winner === 'draw').length;
+  const totalGoals = db.matches.reduce((s, m) => s + Object.values(m.goalCounts || {}).reduce((a, b) => a + b, 0), 0);
   const avgGoals = total > 0 ? (totalGoals / total).toFixed(1) : 0;
 
   el.innerHTML = `
@@ -742,7 +773,7 @@ function summaryBox(label, value, icon) {
   return `
     <div style="background:#f8f9fa;border-radius:10px;padding:12px 8px">
       <div style="font-size:1.4rem">${icon}</div>
-      <div style="font-size:1.3rem;font-weight:800;color:#1a472a">${value}</div>
+      <div style="font-size:1.3rem;font-weight:800;color:#27ae60">${value}</div>
       <div style="font-size:0.7rem;color:#aaa;margin-top:2px">${label}</div>
     </div>
   `;
@@ -763,7 +794,7 @@ function renderHistorial() {
 
 function matchCard(m) {
   const dateStr = formatDate(m.date);
-  const winnerTeam = m.scoreA > m.scoreB ? 'a' : m.scoreA < m.scoreB ? 'b' : 'draw';
+  const w = m.winner || 'draw';
 
   const goalsA = m.teamA
     .map(p => (m.goalCounts[p] || 0) > 0 ? `${p} (${m.goalCounts[p]})` : null)
@@ -773,22 +804,22 @@ function matchCard(m) {
     .map(p => (m.goalCounts[p] || 0) > 0 ? `${p} (${m.goalCounts[p]})` : null)
     .filter(Boolean).join(', ');
 
-  const badge = winnerTeam === 'a'
-    ? '<span class="match-result-badge badge-win-a">Ganó Azul</span>'
-    : winnerTeam === 'b'
-    ? '<span class="match-result-badge badge-win-b">Ganó Rojo</span>'
-    : '<span class="match-result-badge badge-draw">Empate</span>';
+  const badge = w === 'a'
+    ? '<span class="match-result-badge badge-win-a">🔵 Ganó Azul</span>'
+    : w === 'b'
+    ? '<span class="match-result-badge badge-win-b">🔴 Ganó Rojo</span>'
+    : '<span class="match-result-badge badge-draw">🤝 Empate</span>';
 
   return `
     <div class="match-card">
       <div class="match-date">📅 ${dateStr}</div>
       <div class="match-score-row">
-        <div class="match-team left ${winnerTeam === 'a' ? 'winner' : ''}">
-          ${winnerTeam === 'a' ? '<span class="trophy">🏆</span> ' : ''}Azul
+        <div class="match-team left ${w === 'a' ? 'winner' : ''}">
+          ${w === 'a' ? '<span class="trophy">🏆</span> ' : ''}Azul
         </div>
-        <div class="match-score-num">${m.scoreA} — ${m.scoreB}</div>
-        <div class="match-team right ${winnerTeam === 'b' ? 'winner' : ''}">
-          Rojo${winnerTeam === 'b' ? ' <span class="trophy">🏆</span>' : ''}
+        <div class="match-score-num">vs</div>
+        <div class="match-team right ${w === 'b' ? 'winner' : ''}">
+          Rojo${w === 'b' ? ' <span class="trophy">🏆</span>' : ''}
         </div>
       </div>
       ${goalsA || goalsB ? `
