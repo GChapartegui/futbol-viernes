@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>⚽ Fútbol Elite</title>
+  <title>⚽ Fútbol "Elite"</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -15,7 +15,7 @@
     }
 
     header {
-      background: linear-gradient(135deg, #2d9e5f, #52c788);
+      background: linear-gradient(135deg, #1e40af, #3b82f6);
       color: white;
       padding: 18px 20px 14px;
       text-align: center;
@@ -25,7 +25,7 @@
 
     nav {
       display: flex;
-      background: #27ae60;
+      background: #2563eb;
       position: sticky;
       top: 0;
       z-index: 10;
@@ -45,7 +45,7 @@
     }
     nav button.active {
       color: white;
-      border-bottom-color: #a8f0c6;
+      border-bottom-color: #93c5fd;
     }
 
     .tab { display: none; padding: 16px; max-width: 500px; margin: 0 auto; }
@@ -62,7 +62,7 @@
     .card-title {
       font-size: 0.9rem;
       font-weight: 700;
-      color: #27ae60;
+      color: #2563eb;
       margin-bottom: 13px;
       display: flex;
       align-items: center;
@@ -92,7 +92,7 @@
     .pos-other { background: #f0f0f0; color: #888; }
 
     .rank-name { flex: 1; font-size: 0.9rem; font-weight: 500; }
-    .rank-value { font-weight: 700; color: #27ae60; font-size: 0.95rem; }
+    .rank-value { font-weight: 700; color: #2563eb; font-size: 0.95rem; }
 
     /* ---- FORMS ---- */
     .form-group { margin-bottom: 14px; }
@@ -116,13 +116,13 @@
       transition: border-color 0.2s;
       color: #1a1a2e;
     }
-    input:focus { border-color: #2ecc71; }
+    input:focus { border-color: #3b82f6; }
 
     .btn-primary {
       display: block;
       width: 100%;
       padding: 14px;
-      background: #27ae60;
+      background: #2563eb;
       color: white;
       border: none;
       border-radius: 12px;
@@ -131,15 +131,15 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-    .btn-primary:hover { background: #219a52; }
+    .btn-primary:hover { background: #1d4ed8; }
     .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
 
     .btn-sm {
       padding: 8px 16px;
       border-radius: 8px;
-      border: 2px solid #27ae60;
+      border: 2px solid #2563eb;
       background: none;
-      color: #27ae60;
+      color: #2563eb;
       font-size: 0.82rem;
       font-weight: 700;
       cursor: pointer;
@@ -221,9 +221,9 @@
     .counter button {
       width: 32px; height: 32px;
       border-radius: 50%;
-      border: 2px solid #27ae60;
+      border: 2px solid #2563eb;
       background: none;
-      color: #27ae60;
+      color: #2563eb;
       font-size: 1.1rem;
       font-weight: 700;
       cursor: pointer;
@@ -350,6 +350,21 @@
     .alert-info { background: #e0f2fe; color: #0369a1; }
     .alert-warn { background: #fef9c3; color: #92400e; }
 
+    /* ---- EXPAND BUTTON ---- */
+    .expand-btn {
+      display: block;
+      width: 100%;
+      margin-top: 10px;
+      padding: 8px;
+      background: none;
+      border: none;
+      color: #2563eb;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+    }
+
     /* ---- WINNER SELECTOR ---- */
     .winner-selector {
       display: flex;
@@ -373,9 +388,9 @@
       color: #1d4ed8;
     }
     .winner-btn.selected-draw {
-      background: #f0fdf4;
-      border-color: #27ae60;
-      color: #27ae60;
+      background: #eff6ff;
+      border-color: #2563eb;
+      color: #2563eb;
     }
     .winner-btn.selected-b {
       background: #fee2e2;
@@ -387,7 +402,7 @@
 <body>
 
 <header>
-  <h1>⚽ Fútbol Elite</h1>
+  <h1>⚽ Fútbol "Elite"</h1>
   <p>Ranking del grupo</p>
 </header>
 
@@ -402,13 +417,15 @@
 <div id="tab-ranking" class="tab active">
 
   <div class="card">
-    <div class="card-title">⚽ Goleadores del año</div>
-    <div id="goals-ranking"></div>
+    <div class="card-title">🏆 Más partidos ganados</div>
+    <div id="wins-ranking"></div>
+    <button class="expand-btn" id="wins-expand-btn" onclick="expandRanking('wins')" style="display:none">Ver todos ▾</button>
   </div>
 
   <div class="card">
-    <div class="card-title">🏆 Más partidos ganados</div>
-    <div id="wins-ranking"></div>
+    <div class="card-title">⚽ Goleadores del año</div>
+    <div id="goals-ranking"></div>
+    <button class="expand-btn" id="goals-expand-btn" onclick="expandRanking('goals')" style="display:none">Ver todos ▾</button>
   </div>
 
   <div class="card">
@@ -525,7 +542,7 @@ function showTab(name, btn) {
   document.getElementById('tab-' + name).classList.add('active');
   btn.classList.add('active');
 
-  if (name === 'ranking')   renderRanking();
+  if (name === 'ranking')   { rankingExpanded.goals = false; rankingExpanded.wins = false; renderRanking(); }
   if (name === 'historial') renderHistorial();
   if (name === 'jugadores') renderPlayers();
   if (name === 'nuevo')     initNewMatch();
@@ -720,36 +737,57 @@ function calcWins() {
     .sort((a, b) => b[1] - a[1]);
 }
 
+const RANKING_DEFAULT = 3;
+const rankingExpanded = { goals: false, wins: false };
+
+function renderRankingItems(items, expanded) {
+  return expanded ? items : items.slice(0, RANKING_DEFAULT);
+}
+
+function expandRanking(type) {
+  rankingExpanded[type] = true;
+  if (type === 'goals') renderGoalsRanking();
+  else renderWinsRanking();
+}
+
 function renderGoalsRanking() {
   const el = document.getElementById('goals-ranking');
+  const btn = document.getElementById('goals-expand-btn');
   if (db.players.length === 0) {
     el.innerHTML = emptyRanking('Agregá jugadores y partidos para ver el ranking.');
+    btn.style.display = 'none';
     return;
   }
   const sorted = calcGoals();
-  el.innerHTML = sorted.map(([name, g], i) => `
+  const visible = renderRankingItems(sorted, rankingExpanded.goals);
+  el.innerHTML = visible.map(([name, g], i) => `
     <div class="ranking-item">
       <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
       <div class="rank-name">${escHtml(name)}</div>
       <div class="rank-value">${g} ⚽</div>
     </div>
   `).join('');
+  btn.style.display = (!rankingExpanded.goals && sorted.length > RANKING_DEFAULT) ? 'block' : 'none';
 }
 
 function renderWinsRanking() {
   const el = document.getElementById('wins-ranking');
+  const btn = document.getElementById('wins-expand-btn');
   if (db.players.length === 0) {
     el.innerHTML = emptyRanking('Agregá jugadores y partidos para ver el ranking.');
+    btn.style.display = 'none';
     return;
   }
   const sorted = calcWins();
-  el.innerHTML = sorted.map(([name, w, played], i) => `
+  const visible = renderRankingItems(sorted, rankingExpanded.wins);
+  el.innerHTML = visible.map(([name, w, played], i) => `
     <div class="ranking-item">
       <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
       <div class="rank-name">${escHtml(name)}</div>
       <div class="rank-value">${w} 🏆 <span style="font-size:0.75rem;color:#aaa;font-weight:400">${played > 0 ? '('+played+' jug.)' : ''}</span></div>
     </div>
   `).join('');
+  btn.style.display = (!rankingExpanded.wins && sorted.length > RANKING_DEFAULT) ? 'block' : 'none';
 }
 
 function renderSummary() {
@@ -773,7 +811,7 @@ function summaryBox(label, value, icon) {
   return `
     <div style="background:#f8f9fa;border-radius:10px;padding:12px 8px">
       <div style="font-size:1.4rem">${icon}</div>
-      <div style="font-size:1.3rem;font-weight:800;color:#27ae60">${value}</div>
+      <div style="font-size:1.3rem;font-weight:800;color:#2563eb">${value}</div>
       <div style="font-size:0.7rem;color:#aaa;margin-top:2px">${label}</div>
     </div>
   `;
