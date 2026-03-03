@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚽ Fútbol Viernes</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f4f0;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a472a, #2d6a4f);
+      color: white;
+      padding: 18px 20px 14px;
+      text-align: center;
+    }
+    header h1 { font-size: 1.4rem; letter-spacing: -0.5px; }
+    header p { font-size: 0.8rem; opacity: 0.75; margin-top: 3px; }
+
+    nav {
+      display: flex;
+      background: #145a32;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    nav button {
+      flex: 1;
+      padding: 11px 6px;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.65);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    nav button.active {
+      color: white;
+      border-bottom-color: #74c69d;
+    }
+
+    .tab { display: none; padding: 16px; max-width: 500px; margin: 0 auto; }
+    .tab.active { display: block; }
+
+    /* ---- CARD ---- */
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    }
+    .card-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #1a472a;
+      margin-bottom: 13px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    /* ---- RANKING ---- */
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid #f5f5f5;
+      gap: 11px;
+    }
+    .ranking-item:last-child { border-bottom: none; }
+
+    .rank-pos {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+    .pos-1 { background: #ffd700; color: #5a4000; }
+    .pos-2 { background: #d0d0d0; color: #333; }
+    .pos-3 { background: #cd7f32; color: white; }
+    .pos-other { background: #f0f0f0; color: #888; }
+
+    .rank-name { flex: 1; font-size: 0.9rem; font-weight: 500; }
+    .rank-value { font-weight: 700; color: #1a472a; font-size: 0.95rem; }
+
+    /* ---- FORMS ---- */
+    .form-group { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #666;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    input[type="text"],
+    input[type="date"] {
+      width: 100%;
+      padding: 11px 13px;
+      border: 2px solid #e8e8e8;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+      color: #1a1a2e;
+    }
+    input:focus { border-color: #52b788; }
+
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: #1a472a;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #145a32; }
+    .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+
+    .btn-sm {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 2px solid #1a472a;
+      background: none;
+      color: #1a472a;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-danger {
+      background: none;
+      border: none;
+      color: #dc3545;
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 4px 8px;
+    }
+
+    /* ---- PLAYER TAGS ---- */
+    .players-pool {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .player-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 13px;
+      border-radius: 20px;
+      border: 2px solid #e0e0e0;
+      background: #f8f8f8;
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .player-tag.team-a {
+      background: #dbeafe;
+      border-color: #1d4ed8;
+      color: #1d4ed8;
+    }
+    .player-tag.team-b {
+      background: #fee2e2;
+      border-color: #b91c1c;
+      color: #b91c1c;
+    }
+
+    .hint {
+      font-size: 0.75rem;
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+
+    /* ---- GOAL COUNTERS ---- */
+    .team-section-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 7px 10px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .team-section-label.a { background: #dbeafe; color: #1d4ed8; }
+    .team-section-label.b { background: #fee2e2; color: #b91c1c; }
+
+    .goals-row {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f8f8f8;
+      gap: 10px;
+    }
+    .goals-row:last-child { border-bottom: none; }
+    .goals-row .pname { flex: 1; font-size: 0.88rem; }
+
+    .counter {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .counter button {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 2px solid #1a472a;
+      background: none;
+      color: #1a472a;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .counter button:active { background: #e8f5e9; }
+    .counter span {
+      min-width: 26px;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    /* ---- SCORE SUMMARY ---- */
+    .score-summary {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+    }
+    .score-box {
+      flex: 1;
+      text-align: center;
+      padding: 14px 10px;
+      border-radius: 12px;
+    }
+    .score-box.a { background: #dbeafe; }
+    .score-box.b { background: #fee2e2; }
+    .score-box .num {
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .score-box.a .num { color: #1d4ed8; }
+    .score-box.b .num { color: #b91c1c; }
+    .score-box .lbl { font-size: 0.75rem; color: #888; margin-top: 3px; }
+    .vs { font-size: 1.2rem; color: #ccc; font-weight: 700; }
+
+    /* ---- HISTORIAL ---- */
+    .match-card {
+      background: white;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .match-date { font-size: 0.73rem; color: #aaa; margin-bottom: 8px; }
+    .match-score-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .match-team {
+      flex: 1;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+    .match-team.left { text-align: right; color: #1d4ed8; }
+    .match-team.right { color: #b91c1c; }
+    .match-team.winner { font-size: 0.9rem; }
+    .match-team .trophy { font-size: 0.8rem; }
+    .match-score-num {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      padding: 0 8px;
+      white-space: nowrap;
+    }
+    .match-goals-detail {
+      font-size: 0.72rem;
+      color: #999;
+      margin-top: 7px;
+      line-height: 1.6;
+    }
+    .match-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+    }
+    .match-result-badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+    .badge-win-a { background: #dbeafe; color: #1d4ed8; }
+    .badge-win-b { background: #fee2e2; color: #b91c1c; }
+    .badge-draw { background: #f0f0f0; color: #888; }
+
+    /* ---- PLAYER LIST ---- */
+    .player-list-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .player-list-item:last-child { border-bottom: none; }
+    .player-list-item .pname { flex: 1; font-size: 0.9rem; }
+    .add-row { display: flex; gap: 8px; }
+    .add-row input { flex: 1; }
+
+    /* ---- EMPTY STATE ---- */
+    .empty {
+      text-align: center;
+      padding: 32px 16px;
+      color: #ccc;
+    }
+    .empty .big { font-size: 2.8rem; margin-bottom: 10px; }
+    .empty p { font-size: 0.85rem; line-height: 1.5; }
+
+    .spacer { height: 20px; }
+
+    /* ---- ALERT ---- */
+    .alert {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .alert-info { background: #e0f2fe; color: #0369a1; }
+    .alert-warn { background: #fef9c3; color: #92400e; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⚽ Fútbol Viernes</h1>
+  <p>Ranking del grupo</p>
+</header>
+
+<nav>
+  <button class="active" data-tab="ranking" onclick="showTab('ranking', this)">🏆 Ranking</button>
+  <button data-tab="nuevo" onclick="showTab('nuevo', this)">➕ Partido</button>
+  <button data-tab="jugadores" onclick="showTab('jugadores', this)">👥 Jugadores</button>
+  <button data-tab="historial" onclick="showTab('historial', this)">📋 Historial</button>
+</nav>
+
+<!-- ===================== RANKING ===================== -->
+<div id="tab-ranking" class="tab active">
+
+  <div class="card">
+    <div class="card-title">⚽ Goleadores del año</div>
+    <div id="goals-ranking"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🏆 Más partidos ganados</div>
+    <div id="wins-ranking"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 Resumen</div>
+    <div id="summary"></div>
+  </div>
+
+</div>
+
+<!-- ===================== NUEVO PARTIDO ===================== -->
+<div id="tab-nuevo" class="tab">
+
+  <div class="card">
+    <div class="card-title">📅 Fecha del partido</div>
+    <div class="form-group">
+      <input type="date" id="match-date">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">👥 Armar equipos</div>
+    <p class="hint">Tocá un jugador para asignarlo: ⬜ sin equipo → 🔵 Azul → 🔴 Rojo → ⬜</p>
+    <div class="players-pool" id="players-selector"></div>
+    <div id="teams-count" style="font-size:0.75rem;color:#aaa;margin-top:6px"></div>
+  </div>
+
+  <div id="goals-section" style="display:none">
+
+    <div class="card">
+      <div class="team-section-label a">🔵 Equipo Azul — Goles</div>
+      <div id="team-a-counters"></div>
+    </div>
+
+    <div class="card">
+      <div class="team-section-label b">🔴 Equipo Rojo — Goles</div>
+      <div id="team-b-counters"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📊 Resultado actual</div>
+      <div class="score-summary">
+        <div class="score-box a">
+          <div class="num" id="live-score-a">0</div>
+          <div class="lbl">Equipo Azul</div>
+        </div>
+        <div class="vs">—</div>
+        <div class="score-box b">
+          <div class="num" id="live-score-b">0</div>
+          <div class="lbl">Equipo Rojo</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="saveMatch()">Guardar partido ✓</button>
+    <div class="spacer"></div>
+
+  </div>
+
+</div>
+
+<!-- ===================== JUGADORES ===================== -->
+<div id="tab-jugadores" class="tab">
+
+  <div class="card">
+    <div class="card-title">➕ Agregar jugador</div>
+    <div class="add-row">
+      <input type="text" id="new-player-name" placeholder="Nombre del jugador"
+             onkeydown="if(event.key==='Enter') addPlayer()">
+      <button class="btn-sm" onclick="addPlayer()">Agregar</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">👥 Jugadores registrados</div>
+    <div id="players-list"></div>
+  </div>
+
+</div>
+
+<!-- ===================== HISTORIAL ===================== -->
+<div id="tab-historial" class="tab">
+  <div id="matches-list"></div>
+</div>
+
+<script>
+// ============================================================
+//  DATA
+// ============================================================
+let db = { players: [], matches: [] };
+
+function loadDB() {
+  try {
+    const saved = localStorage.getItem('futbol-viernes-v1');
+    if (saved) db = JSON.parse(saved);
+  } catch(e) {}
+}
+
+function saveDB() {
+  localStorage.setItem('futbol-viernes-v1', JSON.stringify(db));
+}
+
+// ============================================================
+//  NAVIGATION
+// ============================================================
+function showTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+
+  if (name === 'ranking')   renderRanking();
+  if (name === 'historial') renderHistorial();
+  if (name === 'jugadores') renderPlayers();
+  if (name === 'nuevo')     initNewMatch();
+}
+
+// ============================================================
+//  PLAYERS
+// ============================================================
+function addPlayer() {
+  const input = document.getElementById('new-player-name');
+  const name = input.value.trim();
+  if (!name) return;
+  if (db.players.includes(name)) {
+    alert(`Ya existe "${name}" en la lista.`);
+    return;
+  }
+  db.players.push(name);
+  saveDB();
+  input.value = '';
+  renderPlayers();
+}
+
+function removePlayer(index) {
+  const name = db.players[index];
+  if (!confirm(`¿Eliminar a ${name}?\n\nSus goles en partidos anteriores se mantienen en el historial.`)) return;
+  db.players.splice(index, 1);
+  saveDB();
+  renderPlayers();
+}
+
+function renderPlayers() {
+  const el = document.getElementById('players-list');
+  if (db.players.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="big">👤</div><p>Todavía no hay jugadores.<br>Agregá el primero arriba.</p></div>';
+    return;
+  }
+  el.innerHTML = db.players.map((p, i) => `
+    <div class="player-list-item">
+      <span class="pname">${escHtml(p)}</span>
+      <button class="btn-danger" onclick="removePlayer(${i})">✕ Eliminar</button>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+//  NEW MATCH STATE
+// ============================================================
+let teamA = [], teamB = [], goalCounts = {};
+
+function initNewMatch() {
+  teamA = []; teamB = []; goalCounts = {};
+  document.getElementById('match-date').value = todayStr();
+  renderPlayersSelector();
+  document.getElementById('goals-section').style.display = 'none';
+}
+
+function renderPlayersSelector() {
+  const el = document.getElementById('players-selector');
+  const count = document.getElementById('teams-count');
+
+  if (db.players.length === 0) {
+    el.innerHTML = '<p style="color:#aaa;font-size:0.82rem">Primero agregá jugadores en la sección "Jugadores".</p>';
+    count.textContent = '';
+    return;
+  }
+
+  el.innerHTML = db.players.map((p, i) => {
+    const inA = teamA.includes(p), inB = teamB.includes(p);
+    const cls = inA ? 'team-a' : inB ? 'team-b' : '';
+    const icon = inA ? '🔵' : inB ? '🔴' : '⬜';
+    return `<span class="player-tag ${cls}" onclick="togglePlayer(${i})">${icon} ${escHtml(p)}</span>`;
+  }).join('');
+
+  const total = teamA.length + teamB.length;
+  count.textContent = teamA.length > 0 || teamB.length > 0
+    ? `🔵 Azul: ${teamA.length}  |  🔴 Rojo: ${teamB.length}  |  ⬜ Sin asignar: ${db.players.length - total}`
+    : '';
+
+  checkTeamsReady();
+}
+
+function togglePlayer(index) {
+  const name = db.players[index];
+  if (!teamA.includes(name) && !teamB.includes(name)) {
+    teamA.push(name);
+  } else if (teamA.includes(name)) {
+    teamA = teamA.filter(p => p !== name);
+    teamB.push(name);
+  } else {
+    teamB = teamB.filter(p => p !== name);
+  }
+  goalCounts = {};
+  renderPlayersSelector();
+}
+
+function checkTeamsReady() {
+  const section = document.getElementById('goals-section');
+  if (teamA.length > 0 && teamB.length > 0) {
+    section.style.display = 'block';
+    renderCounters();
+  } else {
+    section.style.display = 'none';
+  }
+}
+
+function renderCounters() {
+  renderTeamCounters('team-a-counters', teamA, 'a');
+  renderTeamCounters('team-b-counters', teamB, 'b');
+  updateLiveScore();
+}
+
+function renderTeamCounters(containerId, players, team) {
+  document.getElementById(containerId).innerHTML = players.map((p, i) => `
+    <div class="goals-row">
+      <span class="pname">${escHtml(p)}</span>
+      <div class="counter">
+        <button onclick="changeGoal('${team}',${i},-1)">−</button>
+        <span id="gc-${team}-${i}">${goalCounts[p] || 0}</span>
+        <button onclick="changeGoal('${team}',${i},1)">+</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function changeGoal(team, idx, delta) {
+  const players = team === 'a' ? teamA : teamB;
+  const p = players[idx];
+  goalCounts[p] = Math.max(0, (goalCounts[p] || 0) + delta);
+  document.getElementById(`gc-${team}-${idx}`).textContent = goalCounts[p];
+  updateLiveScore();
+}
+
+function updateLiveScore() {
+  const sA = teamA.reduce((s, p) => s + (goalCounts[p] || 0), 0);
+  const sB = teamB.reduce((s, p) => s + (goalCounts[p] || 0), 0);
+  document.getElementById('live-score-a').textContent = sA;
+  document.getElementById('live-score-b').textContent = sB;
+}
+
+function saveMatch() {
+  const date = document.getElementById('match-date').value;
+  if (!date) { alert('Seleccioná una fecha.'); return; }
+  if (teamA.length === 0 || teamB.length === 0) { alert('Armá los dos equipos.'); return; }
+
+  const sA = teamA.reduce((s, p) => s + (goalCounts[p] || 0), 0);
+  const sB = teamB.reduce((s, p) => s + (goalCounts[p] || 0), 0);
+
+  if (sA === sB) {
+    if (!confirm(`El resultado es ${sA}–${sB} (empate). ¿Guardarlo igual?`)) return;
+  }
+
+  db.matches.push({
+    id: Date.now(),
+    date,
+    teamA: [...teamA],
+    teamB: [...teamB],
+    scoreA: sA,
+    scoreB: sB,
+    goalCounts: { ...goalCounts }
+  });
+
+  saveDB();
+
+  const winner = sA > sB ? '🔵 Equipo Azul' : sB > sA ? '🔴 Equipo Rojo' : '🤝 Empate';
+  alert(`✅ Partido guardado!\n\n🔵 Azul ${sA} — ${sB} Rojo 🔴\n\n${winner}`);
+  initNewMatch();
+}
+
+// ============================================================
+//  RANKING
+// ============================================================
+function renderRanking() {
+  renderGoalsRanking();
+  renderWinsRanking();
+  renderSummary();
+}
+
+function calcGoals() {
+  const goals = {};
+  db.players.forEach(p => { goals[p] = 0; });
+  db.matches.forEach(m => {
+    Object.entries(m.goalCounts || {}).forEach(([p, g]) => {
+      goals[p] = (goals[p] || 0) + g;
+    });
+  });
+  return Object.entries(goals).sort((a, b) => b[1] - a[1]);
+}
+
+function calcWins() {
+  const wins = {}, played = {};
+  db.players.forEach(p => { wins[p] = 0; played[p] = 0; });
+  db.matches.forEach(m => {
+    [...m.teamA, ...m.teamB].forEach(p => { played[p] = (played[p] || 0) + 1; });
+    if (m.scoreA === m.scoreB) return;
+    const winners = m.scoreA > m.scoreB ? m.teamA : m.teamB;
+    winners.forEach(p => { wins[p] = (wins[p] || 0) + 1; });
+  });
+  return Object.entries(wins)
+    .map(([p, w]) => [p, w, played[p] || 0])
+    .sort((a, b) => b[1] - a[1]);
+}
+
+function renderGoalsRanking() {
+  const el = document.getElementById('goals-ranking');
+  if (db.players.length === 0) {
+    el.innerHTML = emptyRanking('Agregá jugadores y partidos para ver el ranking.');
+    return;
+  }
+  const sorted = calcGoals();
+  el.innerHTML = sorted.map(([name, g], i) => `
+    <div class="ranking-item">
+      <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
+      <div class="rank-name">${escHtml(name)}</div>
+      <div class="rank-value">${g} ⚽</div>
+    </div>
+  `).join('');
+}
+
+function renderWinsRanking() {
+  const el = document.getElementById('wins-ranking');
+  if (db.players.length === 0) {
+    el.innerHTML = emptyRanking('Agregá jugadores y partidos para ver el ranking.');
+    return;
+  }
+  const sorted = calcWins();
+  el.innerHTML = sorted.map(([name, w, played], i) => `
+    <div class="ranking-item">
+      <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
+      <div class="rank-name">${escHtml(name)}</div>
+      <div class="rank-value">${w} 🏆 <span style="font-size:0.75rem;color:#aaa;font-weight:400">${played > 0 ? '('+played+' jug.)' : ''}</span></div>
+    </div>
+  `).join('');
+}
+
+function renderSummary() {
+  const el = document.getElementById('summary');
+  const total = db.matches.length;
+  const draws = db.matches.filter(m => m.scoreA === m.scoreB).length;
+  const totalGoals = db.matches.reduce((s, m) => s + m.scoreA + m.scoreB, 0);
+  const avgGoals = total > 0 ? (totalGoals / total).toFixed(1) : 0;
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center">
+      ${summaryBox('Partidos jugados', total, '🎮')}
+      ${summaryBox('Empates', draws, '🤝')}
+      ${summaryBox('Goles en total', totalGoals, '⚽')}
+      ${summaryBox('Promedio goles', avgGoals, '📈')}
+    </div>
+  `;
+}
+
+function summaryBox(label, value, icon) {
+  return `
+    <div style="background:#f8f9fa;border-radius:10px;padding:12px 8px">
+      <div style="font-size:1.4rem">${icon}</div>
+      <div style="font-size:1.3rem;font-weight:800;color:#1a472a">${value}</div>
+      <div style="font-size:0.7rem;color:#aaa;margin-top:2px">${label}</div>
+    </div>
+  `;
+}
+
+// ============================================================
+//  HISTORIAL
+// ============================================================
+function renderHistorial() {
+  const el = document.getElementById('matches-list');
+  if (db.matches.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="big">📋</div><p>Todavía no hay partidos registrados.</p></div>';
+    return;
+  }
+  const sorted = [...db.matches].sort((a, b) => new Date(b.date) - new Date(a.date));
+  el.innerHTML = sorted.map(m => matchCard(m)).join('');
+}
+
+function matchCard(m) {
+  const dateStr = formatDate(m.date);
+  const winnerTeam = m.scoreA > m.scoreB ? 'a' : m.scoreA < m.scoreB ? 'b' : 'draw';
+
+  const goalsA = m.teamA
+    .map(p => (m.goalCounts[p] || 0) > 0 ? `${p} (${m.goalCounts[p]})` : null)
+    .filter(Boolean).join(', ');
+
+  const goalsB = m.teamB
+    .map(p => (m.goalCounts[p] || 0) > 0 ? `${p} (${m.goalCounts[p]})` : null)
+    .filter(Boolean).join(', ');
+
+  const badge = winnerTeam === 'a'
+    ? '<span class="match-result-badge badge-win-a">Ganó Azul</span>'
+    : winnerTeam === 'b'
+    ? '<span class="match-result-badge badge-win-b">Ganó Rojo</span>'
+    : '<span class="match-result-badge badge-draw">Empate</span>';
+
+  return `
+    <div class="match-card">
+      <div class="match-date">📅 ${dateStr}</div>
+      <div class="match-score-row">
+        <div class="match-team left ${winnerTeam === 'a' ? 'winner' : ''}">
+          ${winnerTeam === 'a' ? '<span class="trophy">🏆</span> ' : ''}Azul
+        </div>
+        <div class="match-score-num">${m.scoreA} — ${m.scoreB}</div>
+        <div class="match-team right ${winnerTeam === 'b' ? 'winner' : ''}">
+          Rojo${winnerTeam === 'b' ? ' <span class="trophy">🏆</span>' : ''}
+        </div>
+      </div>
+      ${goalsA || goalsB ? `
+        <div class="match-goals-detail">
+          ${goalsA ? `🔵 ${escHtml(goalsA)}` : ''}
+          ${goalsA && goalsB ? '<br>' : ''}
+          ${goalsB ? `🔴 ${escHtml(goalsB)}` : ''}
+        </div>
+      ` : ''}
+      <div class="match-footer">
+        ${badge}
+        <button class="btn-danger" onclick="deleteMatch(${m.id})">🗑 Eliminar</button>
+      </div>
+    </div>
+  `;
+}
+
+function deleteMatch(id) {
+  if (!confirm('¿Eliminar este partido? No se puede deshacer.')) return;
+  db.matches = db.matches.filter(m => m.id !== id);
+  saveDB();
+  renderHistorial();
+}
+
+// ============================================================
+//  UTILS
+// ============================================================
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function formatDate(str) {
+  const [y, m, d] = str.split('-');
+  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return `${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
+}
+
+function posClass(pos) {
+  return ['pos-1','pos-2','pos-3'][pos-1] || 'pos-other';
+}
+
+function emptyRanking(msg) {
+  return `<p style="color:#ccc;font-size:0.82rem;text-align:center;padding:16px 0">${msg}</p>`;
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+loadDB();
+renderRanking();
+document.getElementById('match-date').value = todayStr();
+</script>
+</body>
+</html>
