@@ -39,33 +39,8 @@
       max-width: 340px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     }
-    .login-logo { font-size: 3.5rem; margin-bottom: 12px; }
-    .login-title { font-size: 1.5rem; font-weight: 800; color: #1a1a2e; }
-    .login-sub { font-size: 0.85rem; color: #aaa; margin: 6px 0 28px; }
-    .login-input {
-      width: 100%;
-      padding: 13px;
-      border: 2px solid #e8e8e8;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      outline: none;
-      margin-bottom: 10px;
-      color: #1a1a2e;
-      -webkit-appearance: none;
-      appearance: none;
-      box-sizing: border-box;
-      transition: border-color 0.2s;
-    }
-    .login-input:focus { border-color: #3b82f6; }
-    .login-error {
-      color: #dc3545;
-      font-size: 0.8rem;
-      margin-top: 10px;
-      display: none;
-    }
-
     /* ---- APP ---- */
-    #app { display: none; }
+    #app { display: block; }
 
     header {
       background: linear-gradient(135deg, #1e40af, #3b82f6);
@@ -76,32 +51,6 @@
     }
     header h1 { font-size: 1.4rem; letter-spacing: -0.5px; }
     header p { font-size: 0.8rem; opacity: 0.75; margin-top: 3px; }
-
-    .header-user {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .header-avatar {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.6);
-      object-fit: cover;
-    }
-    .btn-logout {
-      background: rgba(255,255,255,0.2);
-      border: none;
-      color: white;
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 5px 9px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
 
     nav {
       display: flex;
@@ -399,29 +348,12 @@
 </head>
 <body>
 
-<!-- ===================== LOGIN ===================== -->
-<div id="login-screen">
-  <div class="login-card">
-    <div class="login-logo">⚽</div>
-    <div class="login-title">Fútbol "Elite"</div>
-    <div class="login-sub">Ranking del grupo</div>
-    <input class="login-input" type="email" id="login-email" placeholder="Email" autocomplete="email" inputmode="email">
-    <input class="login-input" type="password" id="login-password" placeholder="Contraseña" autocomplete="current-password">
-    <button class="btn-primary" id="btn-login" onclick="doLogin()">Entrar</button>
-    <div class="login-error" id="login-error"></div>
-  </div>
-</div>
-
 <!-- ===================== APP ===================== -->
 <div id="app">
 
-<header style="position:relative">
+<header>
   <h1>⚽ Fútbol "Elite"</h1>
   <p>Ranking del grupo</p>
-  <div class="header-user">
-    <img class="header-avatar" id="user-avatar" src="" alt="">
-    <button class="btn-logout" id="btn-logout">Salir</button>
-  </div>
 </header>
 
 <nav>
@@ -508,33 +440,11 @@
 
 </div><!-- end #app -->
 
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js';
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
-  from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js';
-import { getFirestore, doc, getDoc, setDoc }
-  from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js';
-
+<script>
 // ============================================================
-//  FIREBASE INIT
+//  DATA (localStorage)
 // ============================================================
-const firebaseConfig = {
-  apiKey: "AIzaSyAtSILxo3TyjT-Wn3JFeeSGc40P0bV9bUc",
-  authDomain: "futbol-elite.firebaseapp.com",
-  projectId: "futbol-elite",
-  storageBucket: "futbol-elite.firebasestorage.app",
-  messagingSenderId: "39130574033",
-  appId: "1:39130574033:web:29610080f4684107cf69f0"
-};
-
-const firebaseApp = initializeApp(firebaseConfig);
-const auth = getAuth(firebaseApp);
-const firestore = getFirestore(firebaseApp);
-const DATA_DOC = doc(firestore, 'app', 'data');
-
-// ============================================================
-//  DATA
-// ============================================================
+const STORAGE_KEY = 'futbol-elite-v1';
 let db = { players: [], matches: [] };
 
 const DEFAULT_PLAYERS = [
@@ -545,90 +455,14 @@ const DEFAULT_PLAYERS = [
   'Paul', 'Toto', 'Chapa'
 ];
 
-async function loadDB() {
-  try {
-    const snap = await getDoc(DATA_DOC);
-    if (snap.exists()) {
-      db = snap.data();
-    } else {
-      // First time: check localStorage migration
-      const local = localStorage.getItem('futbol-elite-v1');
-      if (local) {
-        db = JSON.parse(local);
-      } else {
-        db = { players: [...DEFAULT_PLAYERS], matches: [] };
-      }
-      await saveDB();
-    }
-  } catch(e) {
-    console.error('Error loading data', e);
-  }
+function loadDB() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  db = saved ? JSON.parse(saved) : { players: [...DEFAULT_PLAYERS], matches: [] };
 }
 
-async function saveDB() {
-  try {
-    await setDoc(DATA_DOC, db);
-  } catch(e) {
-    console.error('Error saving data', e);
-    alert('Error guardando datos. Verificá tu conexión.');
-  }
+function saveDB() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
 }
-
-// ============================================================
-//  AUTH
-// ============================================================
-window.doLogin = async function() {
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  const errEl = document.getElementById('login-error');
-  const btn = document.getElementById('btn-login');
-  errEl.style.display = 'none';
-
-  if (!email || !password) {
-    errEl.textContent = 'Completá email y contraseña.';
-    errEl.style.display = 'block';
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = 'Entrando…';
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-  } catch(e) {
-    const msgs = {
-      'auth/invalid-email': 'Email inválido.',
-      'auth/user-not-found': 'Usuario no encontrado.',
-      'auth/wrong-password': 'Contraseña incorrecta.',
-      'auth/invalid-credential': 'Email o contraseña incorrectos.',
-    };
-    errEl.textContent = msgs[e.code] || 'Error al iniciar sesión.';
-    errEl.style.display = 'block';
-    btn.disabled = false;
-    btn.textContent = 'Entrar';
-  }
-};
-
-document.getElementById('login-password').addEventListener('keydown', e => {
-  if (e.key === 'Enter') window.doLogin();
-});
-
-document.getElementById('btn-logout').addEventListener('click', async () => {
-  if (confirm('¿Cerrar sesión?')) await signOut(auth);
-});
-
-onAuthStateChanged(auth, async user => {
-  if (user) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    document.getElementById('user-avatar').src = user.photoURL || '';
-    await loadDB();
-    renderRanking();
-    document.getElementById('match-date').value = todayStr();
-  } else {
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('app').style.display = 'none';
-  }
-});
 
 // ============================================================
 //  NAVIGATION
@@ -648,22 +482,22 @@ window.showTab = function(name, btn) {
 // ============================================================
 //  PLAYERS
 // ============================================================
-window.addPlayer = async function() {
+window.addPlayer = function() {
   const input = document.getElementById('new-player-name');
   const name = input.value.trim();
   if (!name) return;
   if (db.players.includes(name)) { alert(`Ya existe "${name}" en la lista.`); return; }
   db.players.push(name);
-  await saveDB();
+  saveDB();
   input.value = '';
   renderPlayers();
 };
 
-window.removePlayer = async function(index) {
+window.removePlayer = function(index) {
   const name = db.players[index];
   if (!confirm(`¿Eliminar a ${name}?\n\nSus goles en partidos anteriores se mantienen.`)) return;
   db.players.splice(index, 1);
-  await saveDB();
+  saveDB();
   renderPlayers();
 };
 
@@ -762,7 +596,7 @@ window.selectWinner = function(team) {
   document.getElementById('btn-win-b').classList.toggle('selected-b', team === 'b');
 };
 
-window.saveMatch = async function() {
+window.saveMatch = function() {
   const date = document.getElementById('match-date').value;
   if (!date) { alert('Seleccioná una fecha.'); return; }
   if (teamA.length === 0 || teamB.length === 0) { alert('Armá los dos equipos.'); return; }
@@ -777,7 +611,7 @@ window.saveMatch = async function() {
     goalCounts: { ...goalCounts }
   });
 
-  await saveDB();
+  saveDB();
   const label = selectedWinner === 'a' ? '🔵 Ganó Azul' : selectedWinner === 'b' ? '🔴 Ganó Rojo' : '🤝 Empate';
   alert(`✅ Partido guardado!\n\n${label}`);
   initNewMatch();
@@ -919,10 +753,10 @@ function matchCard(m) {
     </div>`;
 }
 
-window.deleteMatch = async function(id) {
+window.deleteMatch = function(id) {
   if (!confirm('¿Eliminar este partido? No se puede deshacer.')) return;
   db.matches = db.matches.filter(m => m.id !== id);
-  await saveDB();
+  saveDB();
   renderHistorial();
 };
 
@@ -942,6 +776,13 @@ function emptyRanking(msg) { return `<p style="color:#ccc;font-size:0.82rem;text
 function escHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+// ============================================================
+//  INIT
+// ============================================================
+loadDB();
+renderRanking();
+document.getElementById('match-date').value = todayStr();
 
 // ============================================================
 //  SERVICE WORKER
