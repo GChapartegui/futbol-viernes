@@ -465,6 +465,26 @@ function saveDB() {
 }
 
 // ============================================================
+//  PLAYER DISPLAY ICONS
+// ============================================================
+const PLAYER_ICONS = {
+  'Gordo Impieri': `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="17" viewBox="0 0 16 22" fill="none" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-left:3px;display:inline-block">
+    <line x1="2" y1="0" x2="2" y2="14" stroke="#555" stroke-width="1.6"/>
+    <path d="M14 0 C15.5 3 13 7 13 10 C13 12.5 14 14 14 14" stroke="#555" stroke-width="1.6"/>
+    <path d="M8 4 Q7.5 8 8 12" stroke="#555" stroke-width="1.6"/>
+    <path d="M2 12 Q5 15.5 8 12" stroke="#555" stroke-width="1.6"/>
+    <line x1="3" y1="14" x2="3" y2="21" stroke="#555" stroke-width="1.6"/>
+    <line x1="8" y1="14" x2="8" y2="21" stroke="#555" stroke-width="1.6"/>
+    <line x1="8" y1="12" x2="8" y2="15.5" stroke="#60a5fa" stroke-width="1.6"/>
+    <ellipse cx="8" cy="17.5" rx="1.4" ry="2" fill="#60a5fa"/>
+  </svg>`
+};
+
+function playerDisplay(name) {
+  return escHtml(name) + (PLAYER_ICONS[name] ? ' ' + PLAYER_ICONS[name] : '');
+}
+
+// ============================================================
 //  NAVIGATION
 // ============================================================
 window.showTab = function(name, btn) {
@@ -509,7 +529,7 @@ function renderPlayers() {
   }
   el.innerHTML = db.players.map((p, i) => `
     <div class="player-list-item">
-      <span class="pname">${escHtml(p)}</span>
+      <span class="pname">${playerDisplay(p)}</span>
       <button class="btn-danger" onclick="removePlayer(${i})">✕ Eliminar</button>
     </div>
   `).join('');
@@ -539,7 +559,7 @@ function renderPlayersSelector() {
     const inA = teamA.includes(p), inB = teamB.includes(p);
     const cls = inA ? 'team-a' : inB ? 'team-b' : '';
     const icon = inA ? '🔵' : inB ? '🔴' : '⬜';
-    return `<span class="player-tag ${cls}" onclick="togglePlayer(${i})">${icon} ${escHtml(p)}</span>`;
+    return `<span class="player-tag ${cls}" onclick="togglePlayer(${i})">${icon} ${playerDisplay(p)}</span>`;
   }).join('');
   const total = teamA.length + teamB.length;
   count.textContent = total > 0
@@ -571,7 +591,7 @@ function renderCounters() {
 function renderTeamCounters(containerId, players, team) {
   document.getElementById(containerId).innerHTML = players.map((p, i) => `
     <div class="goals-row">
-      <span class="pname">${escHtml(p)}</span>
+      <span class="pname">${playerDisplay(p)}</span>
       <div class="counter">
         <button onclick="changeGoal('${team}',${i},-1)">−</button>
         <span id="gc-${team}-${i}">${goalCounts[p] || 0}</span>
@@ -662,7 +682,7 @@ function renderGoalsRanking() {
   el.innerHTML = visible.map(([name, g], i) => `
     <div class="ranking-item">
       <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
-      <div class="rank-name">${escHtml(name)}</div>
+      <div class="rank-name">${playerDisplay(name)}</div>
       <div class="rank-value">${g} ⚽</div>
     </div>
   `).join('') + collapseLink;
@@ -679,7 +699,7 @@ function renderWinsRanking() {
   el.innerHTML = visible.map(([name, w, played], i) => `
     <div class="ranking-item">
       <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
-      <div class="rank-name">${escHtml(name)}</div>
+      <div class="rank-name">${playerDisplay(name)}</div>
       <div class="rank-value">${w} 🏆 <span style="font-size:0.75rem;color:#aaa;font-weight:400">${played > 0 ? '('+played+' jug.)' : ''}</span></div>
     </div>
   `).join('') + collapseLink;
