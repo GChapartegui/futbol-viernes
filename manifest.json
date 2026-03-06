@@ -1,0 +1,19 @@
+{
+  "name": "Fútbol \"Elite\"",
+  "short_name": "Fútbol Elite",
+  "description": "Ranking del grupo de fútbol del viernes",
+  "start_url": "/futbol-viernes/",
+  "scope": "/futbol-viernes/",
+  "display": "standalone",
+  "background_color": "#1e40af",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

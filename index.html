@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>⚽ Fútbol "Elite"</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Fútbol Elite">
+  <link rel="apple-touch-icon" href="icon.svg">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -14,14 +20,84 @@
       min-height: 100vh;
     }
 
+    /* ---- LOGIN ---- */
+    #login-screen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #1e40af, #3b82f6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .login-card {
+      background: white;
+      border-radius: 24px;
+      padding: 40px 28px;
+      text-align: center;
+      width: 88%;
+      max-width: 340px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .login-logo { font-size: 3.5rem; margin-bottom: 12px; }
+    .login-title { font-size: 1.5rem; font-weight: 800; color: #1a1a2e; }
+    .login-sub { font-size: 0.85rem; color: #aaa; margin: 6px 0 28px; }
+    .btn-google {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 13px;
+      border: 2px solid #e8e8e8;
+      border-radius: 12px;
+      background: white;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #333;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-google:hover { background: #f5f5f5; border-color: #ccc; }
+
+    /* ---- APP ---- */
+    #app { display: none; }
+
     header {
       background: linear-gradient(135deg, #1e40af, #3b82f6);
       color: white;
       padding: 18px 20px 14px;
       text-align: center;
+      position: relative;
     }
     header h1 { font-size: 1.4rem; letter-spacing: -0.5px; }
     header p { font-size: 0.8rem; opacity: 0.75; margin-top: 3px; }
+
+    .header-user {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header-avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.6);
+      object-fit: cover;
+    }
+    .btn-logout {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 5px 9px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
 
     nav {
       display: flex;
@@ -179,22 +255,10 @@
       transition: all 0.15s;
       user-select: none;
     }
-    .player-tag.team-a {
-      background: #dbeafe;
-      border-color: #1d4ed8;
-      color: #1d4ed8;
-    }
-    .player-tag.team-b {
-      background: #fee2e2;
-      border-color: #b91c1c;
-      color: #b91c1c;
-    }
+    .player-tag.team-a { background: #dbeafe; border-color: #1d4ed8; color: #1d4ed8; }
+    .player-tag.team-b { background: #fee2e2; border-color: #b91c1c; color: #b91c1c; }
 
-    .hint {
-      font-size: 0.75rem;
-      color: #aaa;
-      margin-bottom: 10px;
-    }
+    .hint { font-size: 0.75rem; color: #aaa; margin-bottom: 10px; }
 
     /* ---- GOAL COUNTERS ---- */
     .team-section-label {
@@ -217,11 +281,7 @@
     .goals-row:last-child { border-bottom: none; }
     .goals-row .pname { flex: 1; font-size: 0.88rem; }
 
-    .counter {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .counter { display: flex; align-items: center; gap: 10px; }
     .counter button {
       width: 32px; height: 32px;
       border-radius: 50%;
@@ -234,38 +294,8 @@
       display: flex; align-items: center; justify-content: center;
       transition: all 0.15s;
     }
-    .counter button:active { background: #e8f5e9; }
-    .counter span {
-      min-width: 26px;
-      text-align: center;
-      font-size: 1rem;
-      font-weight: 700;
-    }
-
-    /* ---- SCORE SUMMARY ---- */
-    .score-summary {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      justify-content: center;
-    }
-    .score-box {
-      flex: 1;
-      text-align: center;
-      padding: 14px 10px;
-      border-radius: 12px;
-    }
-    .score-box.a { background: #dbeafe; }
-    .score-box.b { background: #fee2e2; }
-    .score-box .num {
-      font-size: 2.2rem;
-      font-weight: 800;
-      line-height: 1;
-    }
-    .score-box.a .num { color: #1d4ed8; }
-    .score-box.b .num { color: #b91c1c; }
-    .score-box .lbl { font-size: 0.75rem; color: #888; margin-top: 3px; }
-    .vs { font-size: 1.2rem; color: #ccc; font-weight: 700; }
+    .counter button:active { background: #dbeafe; }
+    .counter span { min-width: 26px; text-align: center; font-size: 1rem; font-weight: 700; }
 
     /* ---- HISTORIAL ---- */
     .match-card {
@@ -282,15 +312,10 @@
       justify-content: space-between;
       gap: 8px;
     }
-    .match-team {
-      flex: 1;
-      font-size: 0.82rem;
-      font-weight: 600;
-    }
+    .match-team { flex: 1; font-size: 0.82rem; font-weight: 600; }
     .match-team.left { text-align: right; color: #1d4ed8; }
     .match-team.right { color: #b91c1c; }
     .match-team.winner { font-size: 0.9rem; }
-    .match-team .trophy { font-size: 0.8rem; }
     .match-score-num {
       font-size: 1.5rem;
       font-weight: 800;
@@ -298,24 +323,9 @@
       padding: 0 8px;
       white-space: nowrap;
     }
-    .match-goals-detail {
-      font-size: 0.72rem;
-      color: #999;
-      margin-top: 7px;
-      line-height: 1.6;
-    }
-    .match-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 6px;
-    }
-    .match-result-badge {
-      font-size: 0.7rem;
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-weight: 700;
-    }
+    .match-goals-detail { font-size: 0.72rem; color: #999; margin-top: 7px; line-height: 1.6; }
+    .match-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+    .match-result-badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
     .badge-win-a { background: #dbeafe; color: #1d4ed8; }
     .badge-win-b { background: #fee2e2; color: #b91c1c; }
     .badge-draw { background: #f0f0f0; color: #888; }
@@ -332,29 +342,16 @@
     .add-row { display: flex; gap: 8px; }
     .add-row input { flex: 1; }
 
-    /* ---- EMPTY STATE ---- */
-    .empty {
-      text-align: center;
-      padding: 32px 16px;
-      color: #ccc;
-    }
+    /* ---- EMPTY / LOADING ---- */
+    .empty { text-align: center; padding: 32px 16px; color: #ccc; }
     .empty .big { font-size: 2.8rem; margin-bottom: 10px; }
     .empty p { font-size: 0.85rem; line-height: 1.5; }
 
+    .loading-msg { text-align: center; padding: 40px; color: #aaa; font-size: 0.9rem; }
+
     .spacer { height: 20px; }
 
-    /* ---- ALERT ---- */
-    .alert {
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 0.82rem;
-      margin-bottom: 12px;
-      line-height: 1.5;
-    }
-    .alert-info { background: #e0f2fe; color: #0369a1; }
-    .alert-warn { background: #fef9c3; color: #92400e; }
-
-    /* ---- EXPAND BUTTON ---- */
+    /* ---- EXPAND / COLLAPSE ---- */
     .expand-btn {
       display: block;
       width: 100%;
@@ -378,10 +375,7 @@
     }
 
     /* ---- WINNER SELECTOR ---- */
-    .winner-selector {
-      display: flex;
-      gap: 8px;
-    }
+    .winner-selector { display: flex; gap: 8px; }
     .winner-btn {
       flex: 1;
       padding: 14px 6px;
@@ -394,28 +388,41 @@
       transition: all 0.15s;
       color: #555;
     }
-    .winner-btn.selected-a {
-      background: #dbeafe;
-      border-color: #1d4ed8;
-      color: #1d4ed8;
-    }
-    .winner-btn.selected-draw {
-      background: #eff6ff;
-      border-color: #2563eb;
-      color: #2563eb;
-    }
-    .winner-btn.selected-b {
-      background: #fee2e2;
-      border-color: #b91c1c;
-      color: #b91c1c;
-    }
+    .winner-btn.selected-a { background: #dbeafe; border-color: #1d4ed8; color: #1d4ed8; }
+    .winner-btn.selected-draw { background: #eff6ff; border-color: #2563eb; color: #2563eb; }
+    .winner-btn.selected-b { background: #fee2e2; border-color: #b91c1c; color: #b91c1c; }
   </style>
 </head>
 <body>
 
-<header>
+<!-- ===================== LOGIN ===================== -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">⚽</div>
+    <div class="login-title">Fútbol "Elite"</div>
+    <div class="login-sub">Ranking del grupo</div>
+    <button class="btn-google" id="btn-google-login">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+        <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+        <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+      </svg>
+      Iniciar sesión con Google
+    </button>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="app">
+
+<header style="position:relative">
   <h1>⚽ Fútbol "Elite"</h1>
   <p>Ranking del grupo</p>
+  <div class="header-user">
+    <img class="header-avatar" id="user-avatar" src="" alt="">
+    <button class="btn-logout" id="btn-logout">Salir</button>
+  </div>
 </header>
 
 <nav>
@@ -425,57 +432,47 @@
   <button data-tab="historial" onclick="showTab('historial', this)">📋 Historial</button>
 </nav>
 
-<!-- ===================== RANKING ===================== -->
+<!-- RANKING -->
 <div id="tab-ranking" class="tab active">
-
   <div class="card">
     <div class="card-title">🏆 Más partidos ganados</div>
     <div id="wins-ranking"></div>
     <button class="expand-btn" id="wins-expand-btn" onclick="toggleRanking('wins')" style="display:none">Ver todos ▾</button>
   </div>
-
   <div class="card">
     <div class="card-title">⚽ Goleadores del año</div>
     <div id="goals-ranking"></div>
     <button class="expand-btn" id="goals-expand-btn" onclick="toggleRanking('goals')" style="display:none">Ver todos ▾</button>
   </div>
-
   <div class="card">
     <div class="card-title">📊 Resumen</div>
     <div id="summary"></div>
   </div>
-
 </div>
 
-<!-- ===================== NUEVO PARTIDO ===================== -->
+<!-- NUEVO PARTIDO -->
 <div id="tab-nuevo" class="tab">
-
   <div class="card">
     <div class="card-title">📅 Fecha del partido</div>
     <div class="form-group">
       <input type="date" id="match-date">
     </div>
   </div>
-
   <div class="card">
     <div class="card-title">👥 Armar equipos</div>
     <p class="hint">Tocá un jugador para asignarlo: ⬜ sin equipo → 🔵 Azul → 🔴 Rojo → ⬜</p>
     <div class="players-pool" id="players-selector"></div>
     <div id="teams-count" style="font-size:0.75rem;color:#aaa;margin-top:6px"></div>
   </div>
-
   <div id="goals-section" style="display:none">
-
     <div class="card">
       <div class="team-section-label a">🔵 Equipo Azul — Goles</div>
       <div id="team-a-counters"></div>
     </div>
-
     <div class="card">
       <div class="team-section-label b">🔴 Equipo Rojo — Goles</div>
       <div id="team-b-counters"></div>
     </div>
-
     <div class="card">
       <div class="card-title">🏆 ¿Quién ganó?</div>
       <div class="winner-selector">
@@ -484,17 +481,13 @@
         <button id="btn-win-b" class="winner-btn" onclick="selectWinner('b')">🔴 Rojo</button>
       </div>
     </div>
-
     <button class="btn-primary" onclick="saveMatch()">Guardar partido ✓</button>
     <div class="spacer"></div>
-
   </div>
-
 </div>
 
-<!-- ===================== JUGADORES ===================== -->
+<!-- JUGADORES -->
 <div id="tab-jugadores" class="tab">
-
   <div class="card">
     <div class="card-title">➕ Agregar jugador</div>
     <div class="add-row">
@@ -503,20 +496,44 @@
       <button class="btn-sm" onclick="addPlayer()">Agregar</button>
     </div>
   </div>
-
   <div class="card">
     <div class="card-title">👥 Jugadores registrados</div>
     <div id="players-list"></div>
   </div>
-
 </div>
 
-<!-- ===================== HISTORIAL ===================== -->
+<!-- HISTORIAL -->
 <div id="tab-historial" class="tab">
   <div id="matches-list"></div>
 </div>
 
-<script>
+</div><!-- end #app -->
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc }
+  from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js';
+
+// ============================================================
+//  FIREBASE INIT
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyAtSILxo3TyjT-Wn3JFeeSGc40P0bV9bUc",
+  authDomain: "futbol-elite.firebaseapp.com",
+  projectId: "futbol-elite",
+  storageBucket: "futbol-elite.firebasestorage.app",
+  messagingSenderId: "39130574033",
+  appId: "1:39130574033:web:29610080f4684107cf69f0"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const firestore = getFirestore(firebaseApp);
+const provider = new GoogleAuthProvider();
+const DATA_DOC = doc(firestore, 'app', 'data');
+
 // ============================================================
 //  DATA
 // ============================================================
@@ -530,25 +547,68 @@ const DEFAULT_PLAYERS = [
   'Paul', 'Toto', 'Chapa'
 ];
 
-function loadDB() {
+async function loadDB() {
   try {
-    const saved = localStorage.getItem('futbol-elite-v1');
-    if (saved) db = JSON.parse(saved);
-  } catch(e) {}
-  if (db.players.length === 0) {
-    db.players = [...DEFAULT_PLAYERS];
-    saveDB();
+    const snap = await getDoc(DATA_DOC);
+    if (snap.exists()) {
+      db = snap.data();
+    } else {
+      // First time: check localStorage migration
+      const local = localStorage.getItem('futbol-elite-v1');
+      if (local) {
+        db = JSON.parse(local);
+      } else {
+        db = { players: [...DEFAULT_PLAYERS], matches: [] };
+      }
+      await saveDB();
+    }
+  } catch(e) {
+    console.error('Error loading data', e);
   }
 }
 
-function saveDB() {
-  localStorage.setItem('futbol-elite-v1', JSON.stringify(db));
+async function saveDB() {
+  try {
+    await setDoc(DATA_DOC, db);
+  } catch(e) {
+    console.error('Error saving data', e);
+    alert('Error guardando datos. Verificá tu conexión.');
+  }
 }
+
+// ============================================================
+//  AUTH
+// ============================================================
+document.getElementById('btn-google-login').addEventListener('click', async () => {
+  try {
+    await signInWithPopup(auth, provider);
+  } catch(e) {
+    alert('Error al iniciar sesión. Intentá de nuevo.');
+  }
+});
+
+document.getElementById('btn-logout').addEventListener('click', async () => {
+  if (confirm('¿Cerrar sesión?')) await signOut(auth);
+});
+
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('user-avatar').src = user.photoURL || '';
+    await loadDB();
+    renderRanking();
+    document.getElementById('match-date').value = todayStr();
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+});
 
 // ============================================================
 //  NAVIGATION
 // ============================================================
-function showTab(name, btn) {
+window.showTab = function(name, btn) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
@@ -558,37 +618,34 @@ function showTab(name, btn) {
   if (name === 'historial') renderHistorial();
   if (name === 'jugadores') renderPlayers();
   if (name === 'nuevo')     initNewMatch();
-}
+};
 
 // ============================================================
 //  PLAYERS
 // ============================================================
-function addPlayer() {
+window.addPlayer = async function() {
   const input = document.getElementById('new-player-name');
   const name = input.value.trim();
   if (!name) return;
-  if (db.players.includes(name)) {
-    alert(`Ya existe "${name}" en la lista.`);
-    return;
-  }
+  if (db.players.includes(name)) { alert(`Ya existe "${name}" en la lista.`); return; }
   db.players.push(name);
-  saveDB();
+  await saveDB();
   input.value = '';
   renderPlayers();
-}
+};
 
-function removePlayer(index) {
+window.removePlayer = async function(index) {
   const name = db.players[index];
-  if (!confirm(`¿Eliminar a ${name}?\n\nSus goles en partidos anteriores se mantienen en el historial.`)) return;
+  if (!confirm(`¿Eliminar a ${name}?\n\nSus goles en partidos anteriores se mantienen.`)) return;
   db.players.splice(index, 1);
-  saveDB();
+  await saveDB();
   renderPlayers();
-}
+};
 
 function renderPlayers() {
   const el = document.getElementById('players-list');
   if (db.players.length === 0) {
-    el.innerHTML = '<div class="empty"><div class="big">👤</div><p>Todavía no hay jugadores.<br>Agregá el primero arriba.</p></div>';
+    el.innerHTML = '<div class="empty"><div class="big">👤</div><p>No hay jugadores todavía.</p></div>';
     return;
   }
   el.innerHTML = db.players.map((p, i) => `
@@ -600,7 +657,7 @@ function renderPlayers() {
 }
 
 // ============================================================
-//  NEW MATCH STATE
+//  NEW MATCH
 // ============================================================
 let teamA = [], teamB = [], goalCounts = {}, selectedWinner = null;
 
@@ -614,50 +671,37 @@ function initNewMatch() {
 function renderPlayersSelector() {
   const el = document.getElementById('players-selector');
   const count = document.getElementById('teams-count');
-
   if (db.players.length === 0) {
-    el.innerHTML = '<p style="color:#aaa;font-size:0.82rem">Primero agregá jugadores en la sección "Jugadores".</p>';
+    el.innerHTML = '<p style="color:#aaa;font-size:0.82rem">Primero agregá jugadores.</p>';
     count.textContent = '';
     return;
   }
-
   el.innerHTML = db.players.map((p, i) => {
     const inA = teamA.includes(p), inB = teamB.includes(p);
     const cls = inA ? 'team-a' : inB ? 'team-b' : '';
     const icon = inA ? '🔵' : inB ? '🔴' : '⬜';
     return `<span class="player-tag ${cls}" onclick="togglePlayer(${i})">${icon} ${escHtml(p)}</span>`;
   }).join('');
-
   const total = teamA.length + teamB.length;
-  count.textContent = teamA.length > 0 || teamB.length > 0
+  count.textContent = total > 0
     ? `🔵 Azul: ${teamA.length}  |  🔴 Rojo: ${teamB.length}  |  ⬜ Sin asignar: ${db.players.length - total}`
     : '';
-
   checkTeamsReady();
 }
 
-function togglePlayer(index) {
+window.togglePlayer = function(index) {
   const name = db.players[index];
-  if (!teamA.includes(name) && !teamB.includes(name)) {
-    teamA.push(name);
-  } else if (teamA.includes(name)) {
-    teamA = teamA.filter(p => p !== name);
-    teamB.push(name);
-  } else {
-    teamB = teamB.filter(p => p !== name);
-  }
+  if (!teamA.includes(name) && !teamB.includes(name)) { teamA.push(name); }
+  else if (teamA.includes(name)) { teamA = teamA.filter(p => p !== name); teamB.push(name); }
+  else { teamB = teamB.filter(p => p !== name); }
   goalCounts = {};
   renderPlayersSelector();
-}
+};
 
 function checkTeamsReady() {
   const section = document.getElementById('goals-section');
-  if (teamA.length > 0 && teamB.length > 0) {
-    section.style.display = 'block';
-    renderCounters();
-  } else {
-    section.style.display = 'none';
-  }
+  if (teamA.length > 0 && teamB.length > 0) { section.style.display = 'block'; renderCounters(); }
+  else { section.style.display = 'none'; }
 }
 
 function renderCounters() {
@@ -678,22 +722,22 @@ function renderTeamCounters(containerId, players, team) {
   `).join('');
 }
 
-function changeGoal(team, idx, delta) {
+window.changeGoal = function(team, idx, delta) {
   const players = team === 'a' ? teamA : teamB;
   const p = players[idx];
   goalCounts[p] = Math.max(0, (goalCounts[p] || 0) + delta);
   document.getElementById(`gc-${team}-${idx}`).textContent = goalCounts[p];
-}
+};
 
-function selectWinner(team) {
+window.selectWinner = function(team) {
   selectedWinner = team;
   document.querySelectorAll('.winner-btn').forEach(b => b.className = 'winner-btn');
   document.getElementById('btn-win-a').classList.toggle('selected-a', team === 'a');
   document.getElementById('btn-win-draw').classList.toggle('selected-draw', team === 'draw');
   document.getElementById('btn-win-b').classList.toggle('selected-b', team === 'b');
-}
+};
 
-function saveMatch() {
+window.saveMatch = async function() {
   const date = document.getElementById('match-date').value;
   if (!date) { alert('Seleccioná una fecha.'); return; }
   if (teamA.length === 0 || teamB.length === 0) { alert('Armá los dos equipos.'); return; }
@@ -708,29 +752,25 @@ function saveMatch() {
     goalCounts: { ...goalCounts }
   });
 
-  saveDB();
-
-  const winnerLabel = selectedWinner === 'a' ? '🔵 Ganó Azul' : selectedWinner === 'b' ? '🔴 Ganó Rojo' : '🤝 Empate';
-  alert(`✅ Partido guardado!\n\n${winnerLabel}`);
+  await saveDB();
+  const label = selectedWinner === 'a' ? '🔵 Ganó Azul' : selectedWinner === 'b' ? '🔴 Ganó Rojo' : '🤝 Empate';
+  alert(`✅ Partido guardado!\n\n${label}`);
   initNewMatch();
-}
+};
 
 // ============================================================
 //  RANKING
 // ============================================================
-function renderRanking() {
-  renderGoalsRanking();
-  renderWinsRanking();
-  renderSummary();
-}
+const RANKING_DEFAULT = 3;
+const rankingExpanded = { goals: false, wins: false };
+
+function renderRanking() { renderGoalsRanking(); renderWinsRanking(); renderSummary(); }
 
 function calcGoals() {
   const goals = {};
   db.players.forEach(p => { goals[p] = 0; });
   db.matches.forEach(m => {
-    Object.entries(m.goalCounts || {}).forEach(([p, g]) => {
-      goals[p] = (goals[p] || 0) + g;
-    });
+    Object.entries(m.goalCounts || {}).forEach(([p, g]) => { goals[p] = (goals[p] || 0) + g; });
   });
   return Object.entries(goals).sort((a, b) => b[1] - a[1]);
 }
@@ -744,36 +784,22 @@ function calcWins() {
     const winners = m.winner === 'a' ? m.teamA : m.teamB;
     winners.forEach(p => { wins[p] = (wins[p] || 0) + 1; });
   });
-  return Object.entries(wins)
-    .map(([p, w]) => [p, w, played[p] || 0])
-    .sort((a, b) => b[1] - a[1]);
+  return Object.entries(wins).map(([p, w]) => [p, w, played[p] || 0]).sort((a, b) => b[1] - a[1]);
 }
 
-const RANKING_DEFAULT = 3;
-const rankingExpanded = { goals: false, wins: false };
-
-function renderRankingItems(items, expanded) {
-  return expanded ? items : items.slice(0, RANKING_DEFAULT);
-}
-
-function toggleRanking(type) {
+window.toggleRanking = function(type) {
   rankingExpanded[type] = !rankingExpanded[type];
   if (type === 'goals') renderGoalsRanking();
   else renderWinsRanking();
-}
+};
 
 function renderGoalsRanking() {
   const el = document.getElementById('goals-ranking');
   const btn = document.getElementById('goals-expand-btn');
-  if (db.players.length === 0) {
-    el.innerHTML = emptyRanking('Agregá jugadores y partidos para ver el ranking.');
-    btn.style.display = 'none';
-    return;
-  }
+  if (db.players.length === 0) { el.innerHTML = emptyRanking('Cargá partidos para ver el ranking.'); btn.style.display = 'none'; return; }
   const sorted = calcGoals();
-  const visible = renderRankingItems(sorted, rankingExpanded.goals);
-  const collapseLink = rankingExpanded.goals
-    ? `<div class="collapse-link" onclick="toggleRanking('goals')">Ver menos ▴</div>` : '';
+  const visible = rankingExpanded.goals ? sorted : sorted.slice(0, RANKING_DEFAULT);
+  const collapseLink = rankingExpanded.goals ? `<div class="collapse-link" onclick="toggleRanking('goals')">Ver menos ▴</div>` : '';
   el.innerHTML = visible.map(([name, g], i) => `
     <div class="ranking-item">
       <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
@@ -787,15 +813,10 @@ function renderGoalsRanking() {
 function renderWinsRanking() {
   const el = document.getElementById('wins-ranking');
   const btn = document.getElementById('wins-expand-btn');
-  if (db.players.length === 0) {
-    el.innerHTML = emptyRanking('Agregá jugadores y partidos para ver el ranking.');
-    btn.style.display = 'none';
-    return;
-  }
+  if (db.players.length === 0) { el.innerHTML = emptyRanking('Cargá partidos para ver el ranking.'); btn.style.display = 'none'; return; }
   const sorted = calcWins();
-  const visible = renderRankingItems(sorted, rankingExpanded.wins);
-  const collapseLink = rankingExpanded.wins
-    ? `<div class="collapse-link" onclick="toggleRanking('wins')">Ver menos ▴</div>` : '';
+  const visible = rankingExpanded.wins ? sorted : sorted.slice(0, RANKING_DEFAULT);
+  const collapseLink = rankingExpanded.wins ? `<div class="collapse-link" onclick="toggleRanking('wins')">Ver menos ▴</div>` : '';
   el.innerHTML = visible.map(([name, w, played], i) => `
     <div class="ranking-item">
       <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
@@ -811,26 +832,22 @@ function renderSummary() {
   const total = db.matches.length;
   const draws = db.matches.filter(m => m.winner === 'draw').length;
   const totalGoals = db.matches.reduce((s, m) => s + Object.values(m.goalCounts || {}).reduce((a, b) => a + b, 0), 0);
-  const avgGoals = total > 0 ? (totalGoals / total).toFixed(1) : 0;
-
+  const avg = total > 0 ? (totalGoals / total).toFixed(1) : 0;
   el.innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center">
-      ${summaryBox('Partidos jugados', total, '🎮')}
-      ${summaryBox('Empates', draws, '🤝')}
-      ${summaryBox('Goles en total', totalGoals, '⚽')}
-      ${summaryBox('Promedio goles', avgGoals, '📈')}
-    </div>
-  `;
+      ${sBox('Partidos jugados', total, '🎮')}
+      ${sBox('Empates', draws, '🤝')}
+      ${sBox('Goles en total', totalGoals, '⚽')}
+      ${sBox('Promedio goles', avg, '📈')}
+    </div>`;
 }
 
-function summaryBox(label, value, icon) {
-  return `
-    <div style="background:#f8f9fa;border-radius:10px;padding:12px 8px">
-      <div style="font-size:1.4rem">${icon}</div>
-      <div style="font-size:1.3rem;font-weight:800;color:#2563eb">${value}</div>
-      <div style="font-size:0.7rem;color:#aaa;margin-top:2px">${label}</div>
-    </div>
-  `;
+function sBox(label, value, icon) {
+  return `<div style="background:#f8f9fa;border-radius:10px;padding:12px 8px">
+    <div style="font-size:1.4rem">${icon}</div>
+    <div style="font-size:1.3rem;font-weight:800;color:#2563eb">${value}</div>
+    <div style="font-size:0.7rem;color:#aaa;margin-top:2px">${label}</div>
+  </div>`;
 }
 
 // ============================================================
@@ -839,7 +856,7 @@ function summaryBox(label, value, icon) {
 function renderHistorial() {
   const el = document.getElementById('matches-list');
   if (db.matches.length === 0) {
-    el.innerHTML = '<div class="empty"><div class="big">📋</div><p>Todavía no hay partidos registrados.</p></div>';
+    el.innerHTML = '<div class="empty"><div class="big">📋</div><p>No hay partidos registrados todavía.</p></div>';
     return;
   }
   const sorted = [...db.matches].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -847,88 +864,66 @@ function renderHistorial() {
 }
 
 function matchCard(m) {
-  const dateStr = formatDate(m.date);
   const w = m.winner || 'draw';
-
-  const goalsA = m.teamA
-    .map(p => (m.goalCounts[p] || 0) > 0 ? `${p} (${m.goalCounts[p]})` : null)
-    .filter(Boolean).join(', ');
-
-  const goalsB = m.teamB
-    .map(p => (m.goalCounts[p] || 0) > 0 ? `${p} (${m.goalCounts[p]})` : null)
-    .filter(Boolean).join(', ');
-
-  const badge = w === 'a'
-    ? '<span class="match-result-badge badge-win-a">🔵 Ganó Azul</span>'
-    : w === 'b'
-    ? '<span class="match-result-badge badge-win-b">🔴 Ganó Rojo</span>'
+  const goalsA = m.teamA.map(p => (m.goalCounts[p]||0) > 0 ? `${p} (${m.goalCounts[p]})` : null).filter(Boolean).join(', ');
+  const goalsB = m.teamB.map(p => (m.goalCounts[p]||0) > 0 ? `${p} (${m.goalCounts[p]})` : null).filter(Boolean).join(', ');
+  const badge = w === 'a' ? '<span class="match-result-badge badge-win-a">🔵 Ganó Azul</span>'
+    : w === 'b' ? '<span class="match-result-badge badge-win-b">🔴 Ganó Rojo</span>'
     : '<span class="match-result-badge badge-draw">🤝 Empate</span>';
-
   return `
     <div class="match-card">
-      <div class="match-date">📅 ${dateStr}</div>
+      <div class="match-date">📅 ${formatDate(m.date)}</div>
       <div class="match-score-row">
-        <div class="match-team left ${w === 'a' ? 'winner' : ''}">
-          ${w === 'a' ? '<span class="trophy">🏆</span> ' : ''}Azul
+        <div class="match-team left ${w==='a'?'winner':''}">
+          ${w==='a'?'🏆 ':''}Azul
         </div>
         <div class="match-score-num">vs</div>
-        <div class="match-team right ${w === 'b' ? 'winner' : ''}">
-          Rojo${w === 'b' ? ' <span class="trophy">🏆</span>' : ''}
+        <div class="match-team right ${w==='b'?'winner':''}">
+          Rojo${w==='b'?' 🏆':''}
         </div>
       </div>
-      ${goalsA || goalsB ? `
-        <div class="match-goals-detail">
-          ${goalsA ? `🔵 ${escHtml(goalsA)}` : ''}
-          ${goalsA && goalsB ? '<br>' : ''}
-          ${goalsB ? `🔴 ${escHtml(goalsB)}` : ''}
-        </div>
-      ` : ''}
+      ${goalsA||goalsB ? `<div class="match-goals-detail">
+        ${goalsA?`🔵 ${escHtml(goalsA)}`:''}
+        ${goalsA&&goalsB?'<br>':''}
+        ${goalsB?`🔴 ${escHtml(goalsB)}`:''}
+      </div>` : ''}
       <div class="match-footer">
         ${badge}
         <button class="btn-danger" onclick="deleteMatch(${m.id})">🗑 Eliminar</button>
       </div>
-    </div>
-  `;
+    </div>`;
 }
 
-function deleteMatch(id) {
+window.deleteMatch = async function(id) {
   if (!confirm('¿Eliminar este partido? No se puede deshacer.')) return;
   db.matches = db.matches.filter(m => m.id !== id);
-  saveDB();
+  await saveDB();
   renderHistorial();
-}
+};
 
 // ============================================================
 //  UTILS
 // ============================================================
-function todayStr() {
-  return new Date().toISOString().split('T')[0];
-}
+function todayStr() { return new Date().toISOString().split('T')[0]; }
 
 function formatDate(str) {
-  const [y, m, d] = str.split('-');
+  const [y, mo, d] = str.split('-');
   const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  return `${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
+  return `${parseInt(d)} ${months[parseInt(mo)-1]} ${y}`;
 }
 
-function posClass(pos) {
-  return ['pos-1','pos-2','pos-3'][pos-1] || 'pos-other';
-}
-
-function emptyRanking(msg) {
-  return `<p style="color:#ccc;font-size:0.82rem;text-align:center;padding:16px 0">${msg}</p>`;
-}
-
+function posClass(pos) { return ['pos-1','pos-2','pos-3'][pos-1] || 'pos-other'; }
+function emptyRanking(msg) { return `<p style="color:#ccc;font-size:0.82rem;text-align:center;padding:16px 0">${msg}</p>`; }
 function escHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ============================================================
-//  INIT
+//  SERVICE WORKER
 // ============================================================
-loadDB();
-renderRanking();
-document.getElementById('match-date').value = todayStr();
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
 </script>
 </body>
 </html>
