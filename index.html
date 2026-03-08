@@ -599,7 +599,7 @@ const DEFAULT_PLAYERS = [
   'Fran', 'Roche', 'Gordo Impieri', 'Ivo Sucari',
   'Joaco', 'Juan', 'Juan Ignacio', 'Justo',
   'Lucho', 'Marc', 'Nachito', 'Nico',
-  'Paul', 'Toto', 'Chapa'
+  'Paul', 'Toto', 'Chapa', 'Arman', 'Brunito'
 ];
 
 function loadDB() {
@@ -607,6 +607,11 @@ function loadDB() {
   if (saved) {
     db = JSON.parse(saved);
     if (!db.playerPhotos) db.playerPhotos = {};
+    // Migration: add new players if missing
+    ['Arman', 'Brunito'].forEach(p => {
+      if (!db.players.includes(p)) db.players.push(p);
+    });
+    saveDB();
   } else {
     db = { players: [...DEFAULT_PLAYERS], matches: [], playerPhotos: {} };
   }
@@ -619,21 +624,8 @@ function saveDB() {
 // ─────────────────────────────────────────
 //  PLAYER ICONS (custom SVG)
 // ─────────────────────────────────────────
-const PLAYER_ICONS = {
-  'Gordo Impieri': `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="17" viewBox="0 0 16 22" fill="none" style="vertical-align:middle;margin-left:3px;display:inline-block">
-    <line x1="2" y1="0" x2="2" y2="14" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
-    <path d="M14 0 C15.5 3 13 7 13 10 C13 12.5 14 14 14 14" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
-    <path d="M8 4 Q7.5 8 8 12" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
-    <path d="M2 12 Q5 15.5 8 12" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
-    <line x1="3" y1="14" x2="3" y2="21" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
-    <line x1="8" y1="14" x2="8" y2="21" stroke="#94a3b8" stroke-width="1.6" stroke-linecap="round"/>
-    <line x1="8" y1="12" x2="8" y2="15.5" stroke="#60a5fa" stroke-width="1.6" stroke-linecap="round"/>
-    <ellipse cx="8" cy="17.5" rx="1.4" ry="2" fill="#60a5fa"/>
-  </svg>`
-};
-
 function playerDisplay(name) {
-  return escHtml(name) + (PLAYER_ICONS[name] ? ' ' + PLAYER_ICONS[name] : '');
+  return escHtml(name);
 }
 
 // ─────────────────────────────────────────
