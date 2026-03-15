@@ -10,6 +10,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Fútbol Elite">
   <link rel="apple-touch-icon" href="icon.svg">
+  <!-- Firebase compat SDK — cloud auto-backup -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
     :root {
       --bg:        #080d1a;
@@ -477,9 +480,11 @@
 
 <div id="app">
 
-<header>
+<header style="position:relative">
   <h1>⚽ Fútbol "Elite"</h1>
   <p>Ranking del grupo</p>
+  <button id="lock-btn" onclick="toggleAdmin()" title="Admin"
+    style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:1.2rem;cursor:pointer;opacity:0.45;padding:6px">🔒</button>
 </header>
 
 <nav>
@@ -509,6 +514,11 @@
 
 <!-- ── NUEVO PARTIDO ── -->
 <div id="tab-nuevo" class="tab">
+  <div id="nuevo-locked" class="empty" style="display:none">
+    <div class="big">🔒</div>
+    <p>Solo el admin puede cargar partidos.<br>Tocá el candado del encabezado para entrar.</p>
+  </div>
+  <div id="nuevo-content">
   <div class="card">
     <div class="card-title">📅 Fecha del partido</div>
     <div class="form-group">
@@ -541,11 +551,12 @@
     <button class="btn-primary" onclick="saveMatch()">Guardar partido ✓</button>
     <div class="spacer"></div>
   </div>
+  </div><!-- /nuevo-content -->
 </div>
 
 <!-- ── JUGADORES ── -->
 <div id="tab-jugadores" class="tab">
-  <div class="card">
+  <div class="card" id="add-player-card">
     <div class="card-title">➕ Agregar jugador</div>
     <div class="add-row">
       <input type="text" id="new-player-name" placeholder="Nombre del jugador"
@@ -556,6 +567,17 @@
   <div class="card">
     <div class="card-title">👥 Jugadores registrados</div>
     <div id="players-list"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">☁️ Backup de datos</div>
+    <p style="font-size:0.8rem;color:var(--text2);margin-bottom:10px;line-height:1.5">
+      Los datos se sincronizan automáticamente con la nube cada vez que cargás un partido. Si reinstalás la app, se restauran solos. (Las fotos son solo locales.)
+    </p>
+    <div id="cloud-status" style="font-size:0.76rem;text-align:center;margin-bottom:12px;min-height:18px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-sm" style="flex:1;padding:12px" onclick="exportData()">⬇️ Exportar</button>
+      <button id="import-btn" class="btn-sm" style="flex:1;padding:12px" onclick="document.getElementById('import-input').click()">⬆️ Importar</button>
+    </div>
   </div>
 </div>
 
@@ -584,8 +606,9 @@
   </div>
 </div>
 
-<!-- Hidden photo input -->
-<input type="file" id="photo-input" accept="image/*" style="display:none">
+<!-- Hidden inputs -->
+<input type="file" id="photo-input"  accept="image/*"       style="display:none">
+<input type="file" id="import-input" accept="application/json,.json" style="display:none">
 
 <script>
 // ─────────────────────────────────────────
@@ -593,6 +616,67 @@
 // ─────────────────────────────────────────
 const STORAGE_KEY = 'futbol-elite-v1';
 let db = { players: [], matches: [], playerPhotos: {} };
+
+// Admin mode — solo el dueño puede editar
+const ADMIN_PIN = '1234'; // ← Cambiá esto por tu PIN secreto
+let isAdmin = false;
+
+// ─────────────────────────────────────────
+//  FIREBASE CLOUD AUTO-BACKUP
+//  → Completá los valores de tu proyecto Firebase aquí:
+// ─────────────────────────────────────────
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyCDYdqV9DG1-pUZBeedk7tE1R5ooaL86-I",
+  authDomain:        "futbol-ranking.firebaseapp.com",
+  projectId:         "futbol-ranking",
+  storageBucket:     "futbol-ranking.firebasestorage.app",
+  messagingSenderId: "181873132489",
+  appId:             "1:181873132489:web:913b810ad116632aa51e18"
+};
+
+let fireDB = null;
+if (!FIREBASE_CONFIG.apiKey.startsWith('REEMPLAZAR')) {
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    fireDB = firebase.firestore();
+  } catch(e) { console.warn('Firebase init error:', e); }
+}
+
+async function saveToCloud() {
+  if (!fireDB) return;
+  setCloudStatus('syncing');
+  try {
+    // Las fotos no se guardan en la nube (son muy grandes)
+    await fireDB.collection('backups').doc('main').set({
+      players: db.players,
+      matches:  db.matches,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    setCloudStatus('ok');
+  } catch(e) {
+    console.warn('Cloud save error:', e);
+    setCloudStatus('error');
+  }
+}
+
+async function loadFromCloud() {
+  if (!fireDB) return null;
+  try {
+    const snap = await fireDB.collection('backups').doc('main').get();
+    if (snap.exists) return snap.data();
+  } catch(e) { console.warn('Cloud load error:', e); }
+  return null;
+}
+
+function setCloudStatus(state) {
+  const el = document.getElementById('cloud-status');
+  if (!el) return;
+  const now = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+  if      (state === 'syncing') { el.textContent = '🔄 Guardando en la nube…';   el.style.color = 'var(--text3)'; }
+  else if (state === 'ok')      { el.textContent = '☁️ Sincronizado · ' + now;    el.style.color = 'var(--green)'; }
+  else if (state === 'error')   { el.textContent = '⚠️ Sin conexión a la nube';   el.style.color = 'var(--red)'; }
+  else if (state === 'none')    { el.textContent = '⚙️ Backup en la nube no configurado'; el.style.color = 'var(--text3)'; }
+}
 
 const DEFAULT_PLAYERS = [
   'Gordo Goñi', 'Fede Punos', 'Fede Uberlhart', 'Francisco Goñi',
@@ -602,23 +686,47 @@ const DEFAULT_PLAYERS = [
   'Paul', 'Toto', 'Chapa', 'Arman', 'Brunito'
 ];
 
-function loadDB() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    db = JSON.parse(saved);
-    if (!db.playerPhotos) db.playerPhotos = {};
-    // Migration: add new players if missing
-    ['Arman', 'Brunito'].forEach(p => {
-      if (!db.players.includes(p)) db.players.push(p);
-    });
-    saveDB();
-  } else {
-    db = { players: [...DEFAULT_PLAYERS], matches: [], playerPhotos: {} };
-  }
-}
-
 function saveDB() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+  saveToCloud(); // backup automático en background
+}
+
+// ─────────────────────────────────────────
+//  ADMIN MODE
+// ─────────────────────────────────────────
+window.toggleAdmin = function() {
+  if (isAdmin) {
+    isAdmin = false;
+    document.getElementById('lock-btn').textContent = '🔒';
+    document.getElementById('lock-btn').style.opacity = '0.45';
+    applyAdminUI();
+  } else {
+    const pin = prompt('PIN de administrador:');
+    if (pin === null) return;
+    if (pin === ADMIN_PIN) {
+      isAdmin = true;
+      document.getElementById('lock-btn').textContent = '🔓';
+      document.getElementById('lock-btn').style.opacity = '0.8';
+      applyAdminUI();
+    } else {
+      alert('PIN incorrecto.');
+    }
+  }
+};
+
+function applyAdminUI() {
+  document.getElementById('add-player-card').style.display = isAdmin ? '' : 'none';
+  document.getElementById('import-btn').style.display      = isAdmin ? '' : 'none';
+  const active = document.querySelector('.tab.active');
+  if (!active) return;
+  const name = active.id.replace('tab-', '');
+  if (name === 'historial') renderHistorial();
+  if (name === 'jugadores') renderPlayers();
+  if (name === 'nuevo') {
+    document.getElementById('nuevo-locked').style.display  = isAdmin ? 'none' : 'block';
+    document.getElementById('nuevo-content').style.display = isAdmin ? '' : 'none';
+    if (isAdmin) initNewMatch();
+  }
 }
 
 // ─────────────────────────────────────────
@@ -771,7 +879,7 @@ window.openPlayer = function(name) {
     <div class="profile-hero">
       <div class="profile-avatar-wrap">
         ${avatarHtml(name, 84)}
-        <button class="avatar-edit-btn" onclick="triggerPhoto('${escJs(name)}')">📷</button>
+        ${isAdmin ? `<button class="avatar-edit-btn" onclick="triggerPhoto('${escJs(name)}')">📷</button>` : ''}
       </div>
       <div class="profile-name">${playerDisplay(name)}</div>
       ${badgesHtml}
@@ -917,7 +1025,11 @@ window.showTab = function(name, btn) {
   if (name === 'ranking')   { rankingExpanded.goals = false; rankingExpanded.wins = false; renderRanking(); }
   if (name === 'historial') renderHistorial();
   if (name === 'jugadores') renderPlayers();
-  if (name === 'nuevo')     initNewMatch();
+  if (name === 'nuevo') {
+    document.getElementById('nuevo-locked').style.display  = isAdmin ? 'none' : 'block';
+    document.getElementById('nuevo-content').style.display = isAdmin ? '' : 'none';
+    if (isAdmin) initNewMatch();
+  }
 };
 
 // ─────────────────────────────────────────
@@ -952,7 +1064,7 @@ function renderPlayers() {
     <div class="player-list-item" onclick="openPlayer('${escJs(p)}')">
       ${avatarHtml(p, 36)}
       <span class="pname">${playerDisplay(p)}</span>
-      <button class="btn-danger" onclick="event.stopPropagation();removePlayer(${i})">✕</button>
+      ${isAdmin ? `<button class="btn-danger" onclick="event.stopPropagation();removePlayer(${i})">✕</button>` : ''}
     </div>
   `).join('');
 }
@@ -1157,7 +1269,7 @@ function renderHistorial() {
         </div>
         <div class="match-footer">
           ${badge}
-          <button class="btn-danger" onclick="event.stopPropagation();deleteMatch(${m.id})">🗑</button>
+          ${isAdmin ? `<button class="btn-danger" onclick="event.stopPropagation();deleteMatch(${m.id})">🗑</button>` : ''}
         </div>
       </div>`;
     }).join('');
@@ -1196,15 +1308,83 @@ function escJs(str) {
 }
 
 // ─────────────────────────────────────────
+//  EXPORT / IMPORT
+// ─────────────────────────────────────────
+window.exportData = function() {
+  const json = JSON.stringify(db, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `futbol-elite-backup-${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+document.getElementById('import-input').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data.players) || !Array.isArray(data.matches)) throw new Error();
+      const msg = `¿Restaurar backup?\n\n👥 ${data.players.length} jugadores\n📋 ${data.matches.length} partidos\n\n⚠️ Esto reemplaza los datos actuales.`;
+      if (!confirm(msg)) return;
+      db = data;
+      if (!db.playerPhotos) db.playerPhotos = {};
+      saveDB();
+      renderRanking();
+      renderPlayers();
+      alert('✅ Datos restaurados correctamente.');
+    } catch(err) {
+      alert('❌ El archivo no es válido.');
+    }
+  };
+  reader.readAsText(file);
+  this.value = '';
+});
+
+// ─────────────────────────────────────────
 //  INIT
 // ─────────────────────────────────────────
-loadDB();
-renderRanking();
-document.getElementById('match-date').value = todayStr();
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
-}
+(async function() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    // Datos locales encontrados → cargarlos
+    db = JSON.parse(saved);
+    if (!db.playerPhotos) db.playerPhotos = {};
+    // Migración: agregar jugadores nuevos si faltan
+    ['Arman', 'Brunito'].forEach(p => {
+      if (!db.players.includes(p)) db.players.push(p);
+    });
+    saveDB();
+  } else {
+    // Sin datos locales (app reinstalada) → intentar restaurar desde la nube
+    if (fireDB) {
+      setCloudStatus('syncing');
+      const cloudData = await loadFromCloud();
+      if (cloudData && Array.isArray(cloudData.players) && Array.isArray(cloudData.matches)) {
+        db = cloudData;
+        if (!db.playerPhotos) db.playerPhotos = {};
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+        setCloudStatus('ok');
+      } else {
+        db = { players: [...DEFAULT_PLAYERS], matches: [], playerPhotos: {} };
+        setCloudStatus('error');
+      }
+    } else {
+      db = { players: [...DEFAULT_PLAYERS], matches: [], playerPhotos: {} };
+      setCloudStatus('none');
+    }
+  }
+  renderRanking();
+  document.getElementById('match-date').value = todayStr();
+  // Inicializar UI de admin (ocultar controles de edición por defecto)
+  document.getElementById('add-player-card').style.display = 'none';
+  document.getElementById('import-btn').style.display      = 'none';
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+})();
 </script>
 </body>
 </html>
