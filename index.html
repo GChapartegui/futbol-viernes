@@ -57,31 +57,39 @@
     header h1 { font-size: 1.45rem; font-weight: 800; letter-spacing: -0.4px; }
     header p  { font-size: 0.78rem; color: var(--accent2); margin-top: 3px; }
 
-    /* ───── NAV ───── */
+    /* ───── NAV (bottom, iOS 26 style) ───── */
     nav {
       display: flex;
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
+      background: rgba(8,13,26,0.94);
+      border-top: 1px solid var(--border);
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
       z-index: 10;
+      padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
     }
     nav button {
       flex: 1;
-      padding: 11px 2px;
-      background: none;
-      border: none;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      background: none; border: none;
       color: var(--text3);
-      font-size: 0.65rem;
-      font-weight: 700;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s;
+      font-size: 0.57rem; font-weight: 700;
+      cursor: pointer; padding: 2px 0;
+      transition: color 0.18s;
+      letter-spacing: 0.3px;
     }
-    nav button.active { color: var(--accent2); border-bottom-color: var(--accent); }
+    nav button.active { color: var(--text); }
+    .tab-icon-wrap {
+      width: 46px; height: 30px; border-radius: 15px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; transition: background 0.18s;
+    }
+    nav button.active .tab-icon-wrap { background: var(--card2); }
+    .tab-lbl { line-height: 1; }
 
     /* ───── TABS ───── */
-    .tab { display: none; padding: 16px; max-width: 520px; margin: 0 auto; }
+    .tab { display: none; padding: 16px 16px calc(80px + env(safe-area-inset-bottom)); max-width: 520px; margin: 0 auto; }
     .tab.active { display: block; }
 
     /* ───── CARD ───── */
@@ -364,16 +372,30 @@
     #screen-content { padding: 0 16px 32px; max-width: 520px; margin: 0 auto; }
 
     /* ───── PLAYER PROFILE ───── */
-    .profile-hero {
+    .profile-field-bg {
+      position: relative;
+      background: linear-gradient(175deg, #1a6b2f 0%, #22863a 45%, #1a6b2f 100%);
+      min-height: 178px;
+      margin: 0 -16px;
+      overflow: hidden;
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .field-svg {
+      position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+    }
+    .profile-glass-card {
+      background: rgba(12,19,34,0.78);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 22px;
+      padding: 20px 20px 14px;
+      margin: -62px 0 16px;
+      position: relative; z-index: 2;
       text-align: center;
-      padding: 28px 16px 22px;
-      background: var(--header);
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 20px;
-      margin: 0 -16px 20px;
     }
     .profile-avatar-wrap {
-      position: relative; display: inline-block; margin-bottom: 14px;
+      position: relative; display: inline-block; margin-bottom: 12px;
     }
     .avatar-edit-btn {
       position: absolute; bottom: 2px; right: 2px;
@@ -565,12 +587,12 @@
     style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:1.2rem;cursor:pointer;opacity:0.45;padding:6px">🔒</button>
 </header>
 
-<nav>
-  <button class="active" data-tab="ranking"   onclick="showTab('ranking', this)">🏆 Ranking</button>
-  <button data-tab="nuevo"     onclick="showTab('nuevo', this)">➕ Partido</button>
-  <button data-tab="jugadores" onclick="showTab('jugadores', this)">👥 Jugadores</button>
-  <button data-tab="historial" onclick="showTab('historial', this)">📋 Historial</button>
-  <button data-tab="reglas"    onclick="showTab('reglas', this)">📜 Reglas</button>
+<nav id="bottom-nav">
+  <button class="active" data-tab="ranking"   onclick="showTab('ranking', this)"><span class="tab-icon-wrap">🏆</span><span class="tab-lbl">Ranking</span></button>
+  <button data-tab="nuevo"     onclick="showTab('nuevo', this)"><span class="tab-icon-wrap">➕</span><span class="tab-lbl">Partido</span></button>
+  <button data-tab="jugadores" onclick="showTab('jugadores', this)"><span class="tab-icon-wrap">👥</span><span class="tab-lbl">Jugadores</span></button>
+  <button data-tab="historial" onclick="showTab('historial', this)"><span class="tab-icon-wrap">📋</span><span class="tab-lbl">Historial</span></button>
+  <button data-tab="reglas"    onclick="showTab('reglas', this)"><span class="tab-icon-wrap">📜</span><span class="tab-lbl">Reglas</span></button>
 </nav>
 
 <!-- ── RANKING ── -->
@@ -1085,12 +1107,6 @@ window.openPlayer = function(name) {
           </div>`;
         }).join('')
     }
-    ${(totalBeers > 0 || totalAbsent > 0) ? `
-      <div style="padding:10px 0;border-top:1px solid var(--border2);margin-top:4px;font-size:0.82rem;color:var(--text2)">
-        ${totalBeers > 0 ? `🍺 Debe <strong>${totalBeers}</strong> cerveza${totalBeers > 1 ? 's' : ''}` : ''}
-        ${totalBeers > 0 && totalAbsent > 0 ? ' &nbsp;·&nbsp; ' : ''}
-        ${totalAbsent > 0 ? `🚫 <strong>${totalAbsent}</strong> ausencia${totalAbsent > 1 ? 's' : ''} sin aviso` : ''}
-      </div>` : ''}
   `;
 
   // Recent matches
@@ -1122,9 +1138,21 @@ window.openPlayer = function(name) {
   const streakColor = s.streakType==='win' ? 'color:var(--green)' : s.streakType==='loss' ? 'color:var(--red)' : '';
 
   pushScreen(`
-    <div class="profile-hero">
+    <div class="profile-field-bg">
+      <svg class="field-svg" viewBox="0 0 400 178" preserveAspectRatio="xMidYMid slice">
+        <rect x="12" y="10" width="376" height="158" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.8"/>
+        <line x1="200" y1="10" x2="200" y2="168" stroke="rgba(255,255,255,0.18)" stroke-width="1.8"/>
+        <circle cx="200" cy="89" r="50" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.8"/>
+        <circle cx="200" cy="89" r="4" fill="rgba(255,255,255,0.18)"/>
+        <rect x="12" y="50" width="68" height="78" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+        <rect x="320" y="50" width="68" height="78" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+        <rect x="12" y="68" width="30" height="42" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1.2"/>
+        <rect x="358" y="68" width="30" height="42" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1.2"/>
+      </svg>
+    </div>
+    <div class="profile-glass-card">
       <div class="profile-avatar-wrap">
-        ${avatarHtml(name, 90, {streak: s.streakType==='win' && s.streak >= 3})}
+        ${avatarHtml(name, 82, {streak: s.streakType==='win' && s.streak >= 3})}
         ${isAdmin ? `<button class="avatar-edit-btn" onclick="triggerPhoto('${escJs(name)}')">📷</button>` : ''}
       </div>
       <div class="profile-name">${playerDisplay(name)}</div>
@@ -1650,14 +1678,31 @@ function renderWinsRanking() {
 function renderSummary() {
   const el         = document.getElementById('summary');
   const total      = db.matches.length;
-  const draws      = db.matches.filter(m => m.winner === 'draw').length;
   const totalGoals = db.matches.reduce((s, m) => s + Object.values(m.goalCounts || {}).reduce((a, b) => a + b, 0), 0);
-  const avg        = total ? (totalGoals / total).toFixed(1) : 0;
+
+  // Most late person (all-time tardiness count, excluding on-time)
+  let latestPerson = '—', lateCount = 0;
+  db.players.forEach(p => {
+    const cnt = ((db.tardiness && db.tardiness[p]) || []).length;
+    if (cnt > lateCount) { lateCount = cnt; latestPerson = p; }
+  });
+  const lateDisplay = lateCount > 0
+    ? `<div class="sbox-value" style="font-size:0.78rem;line-height:1.2;margin:2px 0">${escHtml(latestPerson.split(' ')[0])}</div><div class="sbox-label" style="margin-top:1px">${lateCount} vez${lateCount>1?'es':''}</div>`
+    : `<div class="sbox-value">—</div><div class="sbox-label">nadie</div>`;
+
+  // Most MVP person
+  const mvpMap = {};
+  db.matches.forEach(m => { if (m.mvp) mvpMap[m.mvp] = (mvpMap[m.mvp] || 0) + 1; });
+  const topMvpEntry = Object.entries(mvpMap).sort((a,b) => b[1]-a[1])[0];
+  const mvpDisplay = topMvpEntry
+    ? `<div class="sbox-value" style="font-size:0.78rem;line-height:1.2;margin:2px 0">${escHtml(topMvpEntry[0].split(' ')[0])}</div><div class="sbox-label" style="margin-top:1px">×${topMvpEntry[1]} MVP</div>`
+    : `<div class="sbox-value">—</div><div class="sbox-label">nadie</div>`;
+
   el.innerHTML = `<div class="summary-grid">
     <div class="sbox"><div class="sbox-icon">🎮</div><div class="sbox-value">${total}</div><div class="sbox-label">Partidos</div></div>
-    <div class="sbox"><div class="sbox-icon">🤝</div><div class="sbox-value">${draws}</div><div class="sbox-label">Empates</div></div>
+    <div class="sbox"><div class="sbox-icon">🍺</div>${lateDisplay}</div>
     <div class="sbox"><div class="sbox-icon">⚽</div><div class="sbox-value">${totalGoals}</div><div class="sbox-label">Goles totales</div></div>
-    <div class="sbox"><div class="sbox-icon">📈</div><div class="sbox-value">${avg}</div><div class="sbox-label">Prom. goles</div></div>
+    <div class="sbox"><div class="sbox-icon">⭐</div>${mvpDisplay}</div>
   </div>`;
 }
 
@@ -1677,8 +1722,9 @@ function renderWeeklyHighlights() {
   });
   const topMvp = Object.entries(mvpCounts).sort((a,b) => b[1]-a[1])[0];
 
-  // Mayor racha actual
-  let topStreak = null, topStreakCount = 0;
+  // Mayor racha actual — collect ALL players tied at top streak
+  let topStreakCount = 0;
+  const streakPlayers = [];
   db.players.forEach(p => {
     const ms = db.matches
       .filter(m => m.teamA.includes(p) || m.teamB.includes(p))
@@ -1691,17 +1737,26 @@ function renderWeeklyHighlights() {
       else if (result === 'win') streak++;
       else break;
     }
-    if (streak > topStreakCount) { topStreakCount = streak; topStreak = p; }
+    if (streak > topStreakCount) {
+      topStreakCount = streak;
+      streakPlayers.length = 0;
+      streakPlayers.push(p);
+    } else if (streak === topStreakCount && streak > 0) {
+      streakPlayers.push(p);
+    }
   });
 
-  // Más cervezas
-  const beerTotals = {};
-  db.players.forEach(p => {
-    const arr = (db.tardiness && db.tardiness[p]) || [];
-    const total = arr.reduce((sum, t) => sum + (t.beers || 0), 0);
-    if (total > 0) beerTotals[p] = total;
-  });
-  const topBeers = Object.entries(beerTotals).sort((a,b) => b[1]-a[1]).slice(0,3);
+  // Late arrivals on the LAST match date
+  const sortedMatches = [...db.matches].sort((a,b) => new Date(b.date) - new Date(a.date));
+  const lastMatchDate = sortedMatches.length ? sortedMatches[0].date : null;
+  const lateLastMatch = [];
+  if (lastMatchDate && db.tardiness) {
+    db.players.forEach(p => {
+      const arr = (db.tardiness[p]) || [];
+      const rec = arr.find(t => t.date === lastMatchDate && t.type !== 'on-time');
+      if (rec) lateLastMatch.push({ name: p, rec });
+    });
+  }
 
   let html = '';
   if (topMvp) {
@@ -1715,28 +1770,38 @@ function renderWeeklyHighlights() {
       ${avatarHtml(topMvp[0], 36)}
     </div>`;
   }
-  if (topStreak && topStreakCount >= 2) {
-    html += `<div class="highlight-card" onclick="openPlayer('${escJs(topStreak)}')">
+  if (topStreakCount >= 2) {
+    const isTie = streakPlayers.length > 1;
+    const avatarsHtml = isTie
+      ? `<div style="display:flex;gap:-4px">${streakPlayers.slice(0,3).map(p => avatarHtml(p, 28)).join('')}</div>`
+      : avatarHtml(streakPlayers[0], 36);
+    const nameStr = isTie
+      ? streakPlayers.slice(0,3).map(p => escHtml(p.split(' ')[0])).join(', ')
+      : escHtml(streakPlayers[0]);
+    html += `<div class="highlight-card" onclick="${!isTie ? `openPlayer('${escJs(streakPlayers[0])}')` : ''}">
       <div class="highlight-icon">🔥</div>
       <div class="highlight-info">
         <div class="highlight-label">Mejor racha actual</div>
-        <div class="highlight-name">${escHtml(topStreak)}</div>
-        <div class="highlight-sub">${topStreakCount} victoria${topStreakCount > 1 ? 's' : ''} seguida${topStreakCount > 1 ? 's' : ''}</div>
+        <div class="highlight-name">${nameStr}</div>
+        <div class="highlight-sub">${topStreakCount} victoria${topStreakCount > 1 ? 's' : ''} seguida${topStreakCount > 1 ? 's' : ''}${isTie ? ' (empate)' : ''}</div>
       </div>
-      ${avatarHtml(topStreak, 36)}
+      ${avatarsHtml}
     </div>`;
   }
-  if (topBeers.length > 0) {
+  if (lateLastMatch.length > 0) {
+    const lastDateStr = formatDate(lastMatchDate);
     html += `<div class="highlight-card">
       <div class="highlight-icon">🍺</div>
       <div class="highlight-info">
-        <div class="highlight-label">Más cervezas debe</div>
-        ${topBeers.map(([p, b]) => `
-          <div style="display:flex;align-items:center;gap:8px;margin-top:5px">
-            ${avatarHtml(p, 22)}
-            <span style="font-size:0.82rem;font-weight:600;flex:1" onclick="openPlayer('${escJs(p)}')">${escHtml(p)}</span>
-            <span style="font-size:0.78rem;color:var(--gold)">🍺×${b}</span>
-          </div>`).join('')}
+        <div class="highlight-label">Llegaron tarde — ${lastDateStr}</div>
+        ${lateLastMatch.map(({name, rec}) => {
+          const icon = rec.type === 'absent' ? '🚫' : rec.beers === 1 ? '🍺' : rec.beers === 2 ? '🍺🍺' : '🍺🍺🍺🍺';
+          return `<div style="display:flex;align-items:center;gap:8px;margin-top:5px">
+            ${avatarHtml(name, 22)}
+            <span style="font-size:0.82rem;font-weight:600;flex:1" onclick="openPlayer('${escJs(name)}')">${escHtml(name)}</span>
+            <span style="font-size:0.82rem">${icon}</span>
+          </div>`;
+        }).join('')}
       </div>
     </div>`;
   }
@@ -1890,6 +1955,60 @@ document.getElementById('import-input').addEventListener('change', function(e) {
   document.getElementById('add-player-card').style.display = 'none';
   document.getElementById('import-btn').style.display      = 'none';
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+
+  // ── Swipe back from left edge on screen-overlay ──
+  const overlay = document.getElementById('screen-overlay');
+  let swipeStartX = 0, swipeStartY = 0, swipeDragging = false;
+  overlay.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    if (t.clientX < 44) { swipeStartX = t.clientX; swipeStartY = t.clientY; swipeDragging = true; }
+  }, { passive: true });
+  overlay.addEventListener('touchmove', e => {
+    if (!swipeDragging) return;
+    const dx = e.touches[0].clientX - swipeStartX;
+    const dy = Math.abs(e.touches[0].clientY - swipeStartY);
+    if (dx > 10 && dy < 60) {
+      overlay.style.transition = 'none';
+      overlay.style.transform = `translateX(${Math.min(dx, window.innerWidth)}px)`;
+    }
+  }, { passive: true });
+  overlay.addEventListener('touchend', e => {
+    if (!swipeDragging) return;
+    swipeDragging = false;
+    const dx = e.changedTouches[0].clientX - swipeStartX;
+    overlay.style.transition = '';
+    if (dx > 90) {
+      overlay.style.transform = '';
+      popScreen();
+    } else {
+      overlay.style.transform = '';
+    }
+  }, { passive: true });
+
+  // ── Swipe between tabs on main content ──
+  const tabOrder = ['ranking','nuevo','jugadores','historial','reglas'];
+  let tabSwipeX = 0, tabSwipeY = 0, tabSwiping = false;
+  const appEl = document.getElementById('app');
+  appEl.addEventListener('touchstart', e => {
+    if (overlay.classList.contains('active')) return;
+    tabSwipeX = e.touches[0].clientX;
+    tabSwipeY = e.touches[0].clientY;
+    tabSwiping = true;
+  }, { passive: true });
+  appEl.addEventListener('touchend', e => {
+    if (!tabSwiping) return;
+    tabSwiping = false;
+    const dx = e.changedTouches[0].clientX - tabSwipeX;
+    const dy = Math.abs(e.changedTouches[0].clientY - tabSwipeY);
+    if (Math.abs(dx) < 55 || dy > Math.abs(dx) * 0.8) return;
+    const activeBtn = document.querySelector('#bottom-nav button.active');
+    if (!activeBtn) return;
+    const cur = tabOrder.indexOf(activeBtn.dataset.tab);
+    const next = dx < 0 ? Math.min(cur + 1, tabOrder.length - 1) : Math.max(cur - 1, 0);
+    if (next === cur) return;
+    const nextBtn = document.querySelector(`#bottom-nav button[data-tab="${tabOrder[next]}"]`);
+    if (nextBtn) showTab(tabOrder[next], nextBtn);
+  }, { passive: true });
 })();
 </script>
 </body>
