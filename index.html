@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>⚽ Fútbol "Elite"</title>
+  <title>⚽ Fútbol Ranking</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#080d1a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Fútbol Elite">
+  <meta name="apple-mobile-web-app-title" content="Fútbol Ranking">
   <link rel="apple-touch-icon" href="icon.svg">
   <!-- Firebase compat SDK — cloud auto-backup -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -34,6 +34,7 @@
       --gold:      #f59e0b;
       --gold-bg:   rgba(245,158,11,0.14);
       --blue-bg:   rgba(59,130,246,0.12);
+      --orange:    #f97316;
       --header:    linear-gradient(155deg, #0b1730 0%, #1a3b7a 100%);
     }
 
@@ -67,11 +68,11 @@
     }
     nav button {
       flex: 1;
-      padding: 12px 4px;
+      padding: 11px 2px;
       background: none;
       border: none;
       color: var(--text3);
-      font-size: 0.72rem;
+      font-size: 0.65rem;
       font-weight: 700;
       cursor: pointer;
       border-bottom: 2px solid transparent;
@@ -131,7 +132,7 @@
     .rank-name { flex: 1; font-size: 0.9rem; font-weight: 500; }
     .rank-value { font-weight: 800; color: var(--accent2); font-size: 0.92rem; white-space: nowrap; }
 
-    /* ───── SUMMARY ───── */
+    /* ───── SUMMARY / HIGHLIGHTS ───── */
     .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .sbox {
       background: var(--card2);
@@ -143,6 +144,19 @@
     .sbox-icon  { font-size: 1.3rem; margin-bottom: 4px; }
     .sbox-value { font-size: 1.45rem; font-weight: 800; color: var(--accent2); }
     .sbox-label { font-size: 0.66rem; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .highlight-card {
+      background: var(--card2); border: 1px solid var(--border2);
+      border-radius: 14px; padding: 12px 14px;
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 8px; cursor: pointer; transition: border-color 0.15s;
+    }
+    .highlight-card:active { border-color: var(--accent); }
+    .highlight-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .highlight-info { flex: 1; }
+    .highlight-label { font-size: 0.62rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+    .highlight-name  { font-size: 0.92rem; font-weight: 700; margin-top: 2px; }
+    .highlight-sub   { font-size: 0.74rem; color: var(--text2); margin-top: 1px; }
 
     /* ───── FORMS ───── */
     .form-group { margin-bottom: 14px; }
@@ -257,6 +271,20 @@
     .winner-btn.selected-draw { background: var(--gold-bg);  border-color: var(--gold);   color: var(--gold); }
     .winner-btn.selected-b    { background: var(--red-bg);  border-color: var(--red);    color: #fca5a5; }
 
+    /* ───── MVP SELECTOR ───── */
+    .mvp-selector { display: flex; flex-wrap: wrap; gap: 8px; }
+    .mvp-avatar-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      background: none; border: 2px solid transparent;
+      border-radius: 12px; padding: 8px 6px; cursor: pointer;
+      transition: all 0.15s; min-width: 54px;
+    }
+    .mvp-avatar-btn.selected { border-color: var(--gold); background: var(--gold-bg); }
+    .mvp-lbl {
+      font-size: 0.62rem; color: var(--text2); font-weight: 600;
+      max-width: 54px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
     /* ───── HISTORIAL ───── */
     .match-card {
       background: var(--card); border: 1px solid var(--border);
@@ -273,7 +301,7 @@
     .match-team.right  { color: #fca5a5; }
     .match-team.winner { font-size: 0.9rem; }
     .match-score-num   { font-size: 1.2rem; font-weight: 800; padding: 0 8px; color: var(--text2); }
-    .match-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+    .match-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; flex-wrap: wrap; gap: 4px; }
     .match-result-badge { font-size: 0.7rem; padding: 3px 10px; border-radius: 20px; font-weight: 700; }
     .badge-win-a { background: var(--blue-bg); color: var(--accent2); border: 1px solid var(--border); }
     .badge-win-b { background: var(--red-bg);  color: #fca5a5;        border: 1px solid rgba(239,68,68,0.25); }
@@ -339,8 +367,10 @@
     .profile-hero {
       text-align: center;
       padding: 28px 16px 22px;
+      background: var(--header);
       border-bottom: 1px solid var(--border);
       margin-bottom: 20px;
+      margin: 0 -16px 20px;
     }
     .profile-avatar-wrap {
       position: relative; display: inline-block; margin-bottom: 14px;
@@ -352,7 +382,7 @@
       color: #fff; font-size: 0.68rem;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
     }
-    .profile-name { font-size: 1.45rem; font-weight: 800; margin-bottom: 10px; }
+    .profile-name { font-size: 1.55rem; font-weight: 800; margin-bottom: 10px; }
 
     .badges-row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
     .badge-pill {
@@ -391,13 +421,30 @@
 
     /* ───── EXTRA STATS ───── */
     .extra-stats {
-      display: flex; justify-content: space-between;
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
       background: var(--card); border: 1px solid var(--border2);
       border-radius: 14px; padding: 16px 20px; margin-bottom: 14px;
     }
-    .extra-stat { text-align: center; }
+    .extra-stat { text-align: center; min-width: 54px; }
     .extra-stat-val { font-size: 1.5rem; font-weight: 800; color: var(--accent2); }
     .extra-stat-lbl { font-size: 0.64rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 3px; }
+
+    /* ───── BEST PARTNER ───── */
+    .partner-card {
+      background: var(--card); border: 1px solid var(--border2);
+      border-radius: 14px; padding: 12px 16px;
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 14px; cursor: pointer;
+    }
+    .partner-card:active { opacity: 0.7; }
+
+    /* ───── TARDINESS ───── */
+    .tardiness-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid var(--border2);
+      font-size: 0.82rem;
+    }
+    .tardiness-item:last-child { border-bottom: none; }
 
     /* ───── PROFILE MATCH CARDS ───── */
     .pm {
@@ -431,7 +478,7 @@
       border-radius: 22px 22px 0 0; padding: 0 16px 36px;
       transform: translateY(100%);
       transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
-      max-height: 88vh; overflow-y: auto;
+      max-height: 90vh; overflow-y: auto;
     }
     #match-modal.active .modal-sheet { transform: translateY(0); }
     .modal-handle {
@@ -474,6 +521,37 @@
       font-size: 0.82rem; padding: 4px 0; color: var(--text);
     }
     .goal-tag { font-size: 0.7rem; color: var(--gold); font-weight: 700; }
+
+    /* ───── STAR RATING ───── */
+    .stars { display: flex; gap: 2px; }
+    .star-btn {
+      background: none; border: none; font-size: 1.3rem; cursor: pointer;
+      line-height: 1; transition: transform 0.1s; padding: 2px; color: #4b6080;
+    }
+    .star-btn.active { color: #f59e0b; }
+    .star-btn:active { transform: scale(1.2); }
+    .rating-player-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 0; border-bottom: 1px solid var(--border2);
+    }
+    .rating-player-row:last-child { border-bottom: none; }
+
+    /* ───── ANIMATED RINGS ───── */
+    @keyframes ringFill {
+      from { stroke-dasharray: 0 999; }
+    }
+    .ring-animated { animation: ringFill 0.8s ease-out; }
+
+    /* ───── RULES TAB ───── */
+    .rule-item {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 12px 0; border-bottom: 1px solid var(--border2);
+    }
+    .rule-item:last-child { border-bottom: none; }
+    .rule-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
+    .rule-text { flex: 1; }
+    .rule-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 3px; }
+    .rule-desc  { font-size: 0.78rem; color: var(--text2); line-height: 1.5; }
   </style>
 </head>
 <body>
@@ -481,7 +559,7 @@
 <div id="app">
 
 <header style="position:relative">
-  <h1>⚽ Fútbol "Elite"</h1>
+  <h1>⚽ Fútbol Ranking</h1>
   <p>Ranking del grupo</p>
   <button id="lock-btn" onclick="toggleAdmin()" title="Admin"
     style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:1.2rem;cursor:pointer;opacity:0.45;padding:6px">🔒</button>
@@ -492,10 +570,15 @@
   <button data-tab="nuevo"     onclick="showTab('nuevo', this)">➕ Partido</button>
   <button data-tab="jugadores" onclick="showTab('jugadores', this)">👥 Jugadores</button>
   <button data-tab="historial" onclick="showTab('historial', this)">📋 Historial</button>
+  <button data-tab="reglas"    onclick="showTab('reglas', this)">📜 Reglas</button>
 </nav>
 
 <!-- ── RANKING ── -->
 <div id="tab-ranking" class="tab active">
+  <div class="card" id="ranking-highlights-card" style="display:none">
+    <div class="card-title">✨ Highlights de la semana</div>
+    <div id="ranking-highlights"></div>
+  </div>
   <div class="card">
     <div class="card-title">🏆 Más partidos ganados</div>
     <div id="wins-ranking"></div>
@@ -527,7 +610,7 @@
   </div>
   <div class="card">
     <div class="card-title">👥 Armar equipos</div>
-    <p class="hint">Tocá un jugador para asignarlo: ⬜ sin equipo → 🔵 Azul → 🔴 Rojo → ⬜</p>
+    <p class="hint">Tocá un jugador para asignarlo: ○ sin equipo → 🔵 Azul → 🔴 Rojo → ○</p>
     <div class="players-pool" id="players-selector"></div>
     <div id="teams-count" style="font-size:0.74rem;color:var(--text3);margin-top:6px"></div>
   </div>
@@ -547,6 +630,10 @@
         <button id="btn-win-draw" class="winner-btn" onclick="selectWinner('draw')">🤝 Empate</button>
         <button id="btn-win-b"    class="winner-btn" onclick="selectWinner('b')">🔴 Rojo</button>
       </div>
+    </div>
+    <div class="card">
+      <div class="card-title">⭐ MVP del partido <span style="color:var(--text3);font-weight:400;text-transform:none;font-size:0.72rem"> — opcional</span></div>
+      <div class="mvp-selector" id="mvp-selector"></div>
     </div>
     <button class="btn-primary" onclick="saveMatch()">Guardar partido ✓</button>
     <div class="spacer"></div>
@@ -586,6 +673,68 @@
   <div id="matches-list"></div>
 </div>
 
+<!-- ── REGLAS ── -->
+<div id="tab-reglas" class="tab">
+  <div class="card">
+    <div class="card-title">📜 Reglas del grupo</div>
+    <div class="rule-item">
+      <div class="rule-icon">✅</div>
+      <div class="rule-text">
+        <div class="rule-title">A tiempo</div>
+        <div class="rule-desc">Llegás antes de las 19:00 hs. Sin consecuencias.</div>
+      </div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-icon">🍺</div>
+      <div class="rule-text">
+        <div class="rule-title">1 cerveza</div>
+        <div class="rule-desc">Llegás después de las 19:00 hs (hasta las 19:10).</div>
+      </div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-icon">🍺🍺</div>
+      <div class="rule-text">
+        <div class="rule-title">2 cervezas</div>
+        <div class="rule-desc">Llegás después de las 19:10 hs (hasta las 19:20).</div>
+      </div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-icon">🍺🍺🍺🍺</div>
+      <div class="rule-text">
+        <div class="rule-title">4 cervezas</div>
+        <div class="rule-desc">Llegás después de las 19:20 hs o más tarde.</div>
+      </div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-icon">🚫</div>
+      <div class="rule-text">
+        <div class="rule-title">Media cancha</div>
+        <div class="rule-desc">Ausencia sin previo aviso. Pagás la mitad de la cancha.</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">⭐ Valoraciones</div>
+    <div class="rule-item">
+      <div class="rule-icon">⭐</div>
+      <div class="rule-text">
+        <div class="rule-title">Calificación por partido</div>
+        <div class="rule-desc">Al terminar cada partido, el admin puede calificar a cada jugador del 1 al 5. Estas valoraciones se promedian en el perfil de cada uno.</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🏆 MVP del partido</div>
+    <div class="rule-item">
+      <div class="rule-icon">🏆</div>
+      <div class="rule-text">
+        <div class="rule-title">Mejor jugador del partido</div>
+        <div class="rule-desc">El admin elige al MVP de cada partido. Se acumula en el perfil y en los highlights de la semana.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </div><!-- /app -->
 
 <!-- ══════════ SCREEN OVERLAY — Player Profile ══════════ -->
@@ -615,7 +764,7 @@
 //  DATA
 // ─────────────────────────────────────────
 const STORAGE_KEY = 'futbol-elite-v1';
-let db = { players: [], matches: [], playerPhotos: {} };
+let db = { players: [], matches: [], playerPhotos: {}, tardiness: {} };
 
 // Admin mode — solo el dueño puede editar
 const ADMIN_PIN = '1234'; // ← Cambiá esto por tu PIN secreto
@@ -623,7 +772,6 @@ let isAdmin = false;
 
 // ─────────────────────────────────────────
 //  FIREBASE CLOUD AUTO-BACKUP
-//  → Completá los valores de tu proyecto Firebase aquí:
 // ─────────────────────────────────────────
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyCDYdqV9DG1-pUZBeedk7tE1R5ooaL86-I",
@@ -646,10 +794,10 @@ async function saveToCloud() {
   if (!fireDB) return;
   setCloudStatus('syncing');
   try {
-    // Las fotos no se guardan en la nube (son muy grandes)
     await fireDB.collection('backups').doc('main').set({
-      players: db.players,
-      matches:  db.matches,
+      players:   db.players,
+      matches:   db.matches,
+      tardiness: db.tardiness || {},
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     setCloudStatus('ok');
@@ -688,7 +836,7 @@ const DEFAULT_PLAYERS = [
 
 function saveDB() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-  saveToCloud(); // backup automático en background
+  saveToCloud();
 }
 
 // ─────────────────────────────────────────
@@ -730,13 +878,6 @@ function applyAdminUI() {
 }
 
 // ─────────────────────────────────────────
-//  PLAYER ICONS (custom SVG)
-// ─────────────────────────────────────────
-function playerDisplay(name) {
-  return escHtml(name);
-}
-
-// ─────────────────────────────────────────
 //  AVATAR
 // ─────────────────────────────────────────
 function playerInitials(name) {
@@ -751,17 +892,40 @@ function playerColor(name) {
   return cols[Math.abs(h) % cols.length];
 }
 
-function avatarHtml(name, size) {
+function avatarHtml(name, size, options) {
   size = size || 64;
+  options = options || {};
   const photo = db.playerPhotos && db.playerPhotos[name];
+  const streakStyle = options.streak ? 'box-shadow:0 0 0 2.5px #f97316,0 0 10px rgba(249,115,22,0.45);' : '';
   if (photo) {
-    return `<img src="${photo}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;display:block;flex-shrink:0">`;
+    return `<img src="${photo}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;display:block;flex-shrink:0;${streakStyle}">`;
   }
   const initials = playerInitials(name);
   const color    = playerColor(name);
   const fs       = Math.round(size * 0.36);
-  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:${fs}px;flex-shrink:0">${initials}</div>`;
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:${fs}px;flex-shrink:0;${streakStyle}">${initials}</div>`;
 }
+
+// ─────────────────────────────────────────
+//  STREAK HELPER
+// ─────────────────────────────────────────
+function hasFireStreak(name) {
+  const ms = db.matches
+    .filter(m => m.teamA.includes(name) || m.teamB.includes(name))
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  if (!ms.length) return false;
+  let streak = 0;
+  for (const m of ms) {
+    const team = m.teamA.includes(name) ? 'a' : 'b';
+    const result = m.winner === 'draw' ? 'draw' : m.winner === team ? 'win' : 'loss';
+    if (streak === 0) { if (result !== 'win') return false; streak = 1; }
+    else if (result === 'win') streak++;
+    else break;
+  }
+  return streak >= 3;
+}
+
+function playerDisplay(name) { return escHtml(name); }
 
 // ─────────────────────────────────────────
 //  PLAYER STATS
@@ -792,12 +956,33 @@ function playerStats(name) {
     else break;
   }
 
+  // Best partner
+  const partnerCounts = {};
+  matches.forEach(m => {
+    const team = m.teamA.includes(name) ? m.teamA : m.teamB;
+    team.forEach(p => { if (p !== name) partnerCounts[p] = (partnerCounts[p] || 0) + 1; });
+  });
+  const partnerEntries = Object.entries(partnerCounts).sort((a,b) => b[1]-a[1]);
+  const bestPartner  = partnerEntries.length ? partnerEntries[0][0] : null;
+  const partnerCount = bestPartner ? partnerEntries[0][1] : 0;
+
+  // MVP count
+  const mvpCount = db.matches.filter(m => m.mvp === name).length;
+
+  // Average rating
+  const ratedMatches = matches.filter(m => m.ratings && m.ratings[name] !== undefined);
+  const avgRating = ratedMatches.length
+    ? (ratedMatches.reduce((s, m) => s + m.ratings[name], 0) / ratedMatches.length).toFixed(1)
+    : null;
+
   return {
     played, wins, losses, draws, goals,
     winPct:  played ? Math.round((wins   / played) * 100) : 0,
     lossPct: played ? Math.round((losses / played) * 100) : 0,
     gpg:     played ? (goals / played).toFixed(1) : '0.0',
-    streak, streakType, matches
+    streak, streakType, matches,
+    bestPartner, partnerCount,
+    mvpCount, avgRating
   };
 }
 
@@ -813,6 +998,8 @@ function playerBadges(name, stats) {
     badges.push({ type:'fire', icon:'🔥', label:'Racha ' + stats.streak });
   if (stats.streakType === 'loss' && stats.streak >= 3)
     badges.push({ type:'fire', icon:'😰', label:'Mala racha ' + stats.streak });
+  if (stats.mvpCount > 0)
+    badges.push({ type:'gold', icon:'⭐', label:'MVP ×' + stats.mvpCount });
   return badges;
 }
 
@@ -843,7 +1030,7 @@ window.openPlayer = function(name) {
         `<span class="badge-pill ${b.type}">${b.icon} ${b.label}</span>`).join('')}</div>`
     : '';
 
-  // SVG ring helper
+  // SVG ring with animation
   function ring(pct, color) {
     const r = 28, circ = 2 * Math.PI * r;
     const dash = (pct / 100) * circ;
@@ -851,13 +1038,62 @@ window.openPlayer = function(name) {
       <circle cx="34" cy="34" r="${r}" fill="none" stroke="#1e293b" stroke-width="6"/>
       <circle cx="34" cy="34" r="${r}" fill="none" stroke="${color}" stroke-width="6"
         stroke-dasharray="${dash.toFixed(1)} ${circ.toFixed(1)}" stroke-linecap="round"
-        transform="rotate(-90 34 34)"/>
+        transform="rotate(-90 34 34)" class="ring-animated"/>
       <text x="34" y="34" text-anchor="middle" dy="0.35em"
         fill="white" font-size="13" font-weight="800">${pct}%</text>
     </svg>`;
   }
 
-  // Recent matches for this player
+  // Best partner section
+  const partnerHtml = s.bestPartner
+    ? `<div class="partner-card" onclick="openPlayer('${escJs(s.bestPartner)}')">
+        <div style="flex-shrink:0">
+          <div style="font-size:0.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">🤝 Mejor socio</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            ${avatarHtml(s.bestPartner, 40)}
+            <div>
+              <div style="font-size:0.9rem;font-weight:700">${escHtml(s.bestPartner)}</div>
+              <div style="font-size:0.74rem;color:var(--text2)">${s.partnerCount} partido${s.partnerCount > 1 ? 's' : ''} juntos</div>
+            </div>
+          </div>
+        </div>
+      </div>`
+    : '';
+
+  // Tardiness section
+  const tardinessArr = (db.tardiness && db.tardiness[name]) || [];
+  const totalBeers   = tardinessArr.filter(t => t.type !== 'absent').reduce((sum, t) => sum + (t.beers || 0), 0);
+  const totalAbsent  = tardinessArr.filter(t => t.type === 'absent').length;
+
+  const tardinessHtml = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div class="card-title" style="margin-bottom:0">🍺 Llegadas tarde</div>
+      ${isAdmin ? `<button class="btn-sm" style="font-size:0.74rem;padding:6px 12px" onclick="openTardinessSheet('${escJs(name)}')">+ Registrar</button>` : ''}
+    </div>
+    ${tardinessArr.length === 0
+      ? `<p style="font-size:0.8rem;color:var(--text3);padding:4px 0 8px">Sin registros.</p>`
+      : tardinessArr.slice(0, 6).map((t, i) => {
+          const icon = t.type === 'absent' ? '🚫' : t.beers === 1 ? '🍺' : t.beers === 2 ? '🍺🍺' : '🍺🍺🍺🍺';
+          const desc = t.type === 'absent' ? 'Ausente sin aviso' : `${t.beers} cerveza${t.beers > 1 ? 's' : ''}`;
+          return `<div class="tardiness-item">
+            <span style="font-size:1.1rem">${icon}</span>
+            <div style="flex:1">
+              <div style="font-size:0.82rem;font-weight:600">${desc}</div>
+              <div style="font-size:0.72rem;color:var(--text3)">${formatDate(t.date)}</div>
+            </div>
+            ${isAdmin ? `<button class="btn-danger" onclick="deleteTardiness('${escJs(name)}',${i})">✕</button>` : ''}
+          </div>`;
+        }).join('')
+    }
+    ${(totalBeers > 0 || totalAbsent > 0) ? `
+      <div style="padding:10px 0;border-top:1px solid var(--border2);margin-top:4px;font-size:0.82rem;color:var(--text2)">
+        ${totalBeers > 0 ? `🍺 Debe <strong>${totalBeers}</strong> cerveza${totalBeers > 1 ? 's' : ''}` : ''}
+        ${totalBeers > 0 && totalAbsent > 0 ? ' &nbsp;·&nbsp; ' : ''}
+        ${totalAbsent > 0 ? `🚫 <strong>${totalAbsent}</strong> ausencia${totalAbsent > 1 ? 's' : ''} sin aviso` : ''}
+      </div>` : ''}
+  `;
+
+  // Recent matches
   const recentHtml = s.matches.length === 0
     ? `<div class="empty"><div class="big">📋</div><p>Sin partidos todavía.</p></div>`
     : s.matches.slice(0, 8).map(m => {
@@ -865,20 +1101,30 @@ window.openPlayer = function(name) {
         const result = m.winner === 'draw' ? 'draw' : m.winner === team ? 'win' : 'loss';
         const label  = result === 'win' ? '✅ Victoria' : result === 'loss' ? '❌ Derrota' : '🤝 Empate';
         const myGoals = (m.goalCounts && m.goalCounts[name]) || 0;
+        const mvpTag  = m.mvp === name ? ' <span style="color:var(--gold);font-size:0.72rem">⭐ MVP</span>' : '';
+        const myRating = m.ratings && m.ratings[name];
+        const starsHtml = myRating ? `<div class="pm-goals" style="color:var(--gold)">${'★'.repeat(myRating)}${'☆'.repeat(5-myRating)}</div>` : '';
         return `<div class="pm" onclick="openMatchModal(${m.id})">
           <div class="pm-left">
             <div class="pm-date">📅 ${formatDate(m.date)}</div>
-            <div class="pm-result ${result}">${label}</div>
+            <div class="pm-result ${result}">${label}${mvpTag}</div>
             ${myGoals > 0 ? `<div class="pm-goals">⚽ ${myGoals} gol${myGoals > 1 ? 'es' : ''}</div>` : ''}
+            ${starsHtml}
           </div>
           <div class="pm-arrow">›</div>
         </div>`;
       }).join('');
 
+  // Streak display
+  const streakVal = s.streak > 1
+    ? `<span style="font-size:1.1rem">${s.streakType==='win'?'🔥':'❄️'}</span>${s.streak}`
+    : '—';
+  const streakColor = s.streakType==='win' ? 'color:var(--green)' : s.streakType==='loss' ? 'color:var(--red)' : '';
+
   pushScreen(`
     <div class="profile-hero">
       <div class="profile-avatar-wrap">
-        ${avatarHtml(name, 84)}
+        ${avatarHtml(name, 90, {streak: s.streakType==='win' && s.streak >= 3})}
         ${isAdmin ? `<button class="avatar-edit-btn" onclick="triggerPhoto('${escJs(name)}')">📷</button>` : ''}
       </div>
       <div class="profile-name">${playerDisplay(name)}</div>
@@ -914,18 +1160,30 @@ window.openPlayer = function(name) {
     <div class="extra-stats">
       <div class="extra-stat">
         <div class="extra-stat-val">${s.gpg}</div>
-        <div class="extra-stat-lbl">Goles / partido</div>
+        <div class="extra-stat-lbl">Goles/pt</div>
       </div>
       <div class="extra-stat">
         <div class="extra-stat-val">${s.draws}</div>
         <div class="extra-stat-lbl">Empates</div>
       </div>
       <div class="extra-stat">
-        <div class="extra-stat-val" style="${s.streakType==='win'?'color:var(--green)':s.streakType==='loss'?'color:var(--red)':''}">
-          ${s.streak > 1 ? (s.streakType==='win'?'🔥':'❄️')+' '+s.streak : '—'}
-        </div>
-        <div class="extra-stat-lbl">Racha actual</div>
+        <div class="extra-stat-val" style="${streakColor}">${streakVal}</div>
+        <div class="extra-stat-lbl">Racha</div>
       </div>
+      <div class="extra-stat">
+        <div class="extra-stat-val" style="color:var(--gold)">${s.mvpCount}</div>
+        <div class="extra-stat-lbl">MVP</div>
+      </div>
+      ${s.avgRating ? `<div class="extra-stat">
+        <div class="extra-stat-val" style="color:var(--gold)">${s.avgRating}</div>
+        <div class="extra-stat-lbl">Valoración</div>
+      </div>` : ''}
+    </div>
+
+    ${partnerHtml}
+
+    <div class="card" style="padding:14px 16px">
+      ${tardinessHtml}
     </div>
 
     <div class="card-title" style="padding:4px 0 12px">📋 Partidos recientes</div>
@@ -965,6 +1223,48 @@ document.getElementById('photo-input').addEventListener('change', function(e) {
 });
 
 // ─────────────────────────────────────────
+//  TARDINESS
+// ─────────────────────────────────────────
+window.openTardinessSheet = function(name) {
+  document.getElementById('modal-body').innerHTML = `
+    <div class="modal-title">🍺 Registrar llegada — ${escHtml(name)}</div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:0.74rem;font-weight:700;color:var(--text2);display:block;margin-bottom:6px">FECHA</label>
+      <input type="date" id="tardiness-date" value="${todayStr()}"
+        style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card2);color:var(--text);font-size:0.88rem">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn-sm" style="padding:13px;text-align:left;font-size:0.85rem" onclick="saveTardiness('${escJs(name)}','on-time',0)">✅ A tiempo</button>
+      <button class="btn-sm" style="padding:13px;text-align:left;font-size:0.85rem" onclick="saveTardiness('${escJs(name)}','late1',1)">🍺 1 cerveza — llegó después de las 19:00</button>
+      <button class="btn-sm" style="padding:13px;text-align:left;font-size:0.85rem" onclick="saveTardiness('${escJs(name)}','late2',2)">🍺🍺 2 cervezas — después de las 19:10</button>
+      <button class="btn-sm" style="padding:13px;text-align:left;font-size:0.85rem" onclick="saveTardiness('${escJs(name)}','late4',4)">🍺🍺🍺🍺 4 cervezas — después de las 19:20</button>
+      <button class="btn-sm" style="padding:13px;text-align:left;font-size:0.85rem;color:var(--red);border-color:var(--red)" onclick="saveTardiness('${escJs(name)}','absent',0)">🚫 Ausente sin aviso — media cancha</button>
+    </div>
+  `;
+  document.getElementById('match-modal').classList.add('active');
+};
+
+window.saveTardiness = function(name, type, beers) {
+  const dateEl = document.getElementById('tardiness-date');
+  const date   = dateEl ? dateEl.value : todayStr();
+  if (!db.tardiness) db.tardiness = {};
+  if (!db.tardiness[name]) db.tardiness[name] = [];
+  if (type !== 'on-time') {
+    db.tardiness[name].unshift({ date, type, beers: beers || 0 });
+    saveDB();
+  }
+  closeMatchModal();
+  openPlayer(name);
+};
+
+window.deleteTardiness = function(name, idx) {
+  if (!confirm('¿Eliminar este registro?')) return;
+  db.tardiness[name].splice(idx, 1);
+  saveDB();
+  openPlayer(name);
+};
+
+// ─────────────────────────────────────────
 //  MATCH MODAL
 // ─────────────────────────────────────────
 window.openMatchModal = function(id) {
@@ -985,6 +1285,7 @@ window.openMatchModal = function(id) {
         ${avatarHtml(p, 24)}
         <span>${escHtml(p)}</span>
         ${g > 0 ? `<span class="goal-tag">⚽${g}</span>` : ''}
+        ${m.mvp === p ? `<span style="color:var(--gold);font-size:0.8rem;margin-left:auto">⭐</span>` : ''}
       </div>`;
     }).join('');
   }
@@ -992,10 +1293,30 @@ window.openMatchModal = function(id) {
   const labelA = w === 'a' ? 'winner-a' : 'a';
   const labelB = w === 'b' ? 'winner-b' : 'b';
 
+  // Ratings section
+  const ratedPlayers = [...m.teamA, ...m.teamB].filter(p => m.ratings && m.ratings[p] !== undefined);
+  const ratingsHtml = ratedPlayers.length > 0
+    ? `<div style="margin-top:14px">
+        <div style="font-size:0.64rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;text-align:center">⭐ Valoraciones</div>
+        ${ratedPlayers.map(p => `
+          <div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+            ${avatarHtml(p, 22)}
+            <span style="flex:1;font-size:0.82rem">${escHtml(p)}</span>
+            <span style="color:var(--gold);font-size:0.88rem">${'★'.repeat(m.ratings[p])}${'☆'.repeat(5-m.ratings[p])}</span>
+          </div>`).join('')}
+      </div>` : '';
+
   document.getElementById('modal-body').innerHTML = `
     <div class="modal-title">Detalle del partido</div>
     ${badge}
     <div class="modal-date">📅 ${formatDate(m.date)}</div>
+    ${m.mvp ? `<div style="text-align:center;margin-bottom:14px;padding:8px 16px;background:var(--gold-bg);border:1px solid rgba(245,158,11,0.3);border-radius:12px">
+      <div style="font-size:0.65rem;color:var(--gold);font-weight:800;text-transform:uppercase;letter-spacing:0.5px">⭐ MVP del partido</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px">
+        ${avatarHtml(m.mvp, 28)}
+        <span style="font-weight:700;font-size:0.9rem">${escHtml(m.mvp)}</span>
+      </div>
+    </div>` : ''}
     <div class="modal-teams">
       <div class="modal-team">
         <div class="modal-team-label ${labelA}">🔵 Azul ${w==='a'?'🏆':''}</div>
@@ -1006,12 +1327,72 @@ window.openMatchModal = function(id) {
         ${teamHtml(m.teamB)}
       </div>
     </div>
+    ${ratingsHtml}
   `;
   document.getElementById('match-modal').classList.add('active');
 };
 
 window.closeMatchModal = function() {
   document.getElementById('match-modal').classList.remove('active');
+};
+
+// ─────────────────────────────────────────
+//  RATINGS MODAL
+// ─────────────────────────────────────────
+let pendingRatingMatchId = null;
+let currentRatings = {};
+
+function openRatingsModal(matchId, players) {
+  pendingRatingMatchId = matchId;
+  currentRatings = {};
+
+  const rowsHtml = players.map(p => `
+    <div class="rating-player-row">
+      ${avatarHtml(p, 32)}
+      <span style="flex:1;font-size:0.88rem">${escHtml(p)}</span>
+      <div class="stars" id="stars-${btoa(unescape(encodeURIComponent(p))).replace(/[^a-zA-Z0-9]/g,'')}">
+        ${[1,2,3,4,5].map(n =>
+          `<button class="star-btn" onclick="setRating('${escJs(p)}',${n})">★</button>`
+        ).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('modal-body').innerHTML = `
+    <div class="modal-title">✅ ¡Partido guardado!</div>
+    <p style="text-align:center;font-size:0.8rem;color:var(--text2);margin-bottom:16px">Valorá a los jugadores (opcional)</p>
+    ${rowsHtml}
+    <div style="display:flex;gap:8px;margin-top:20px">
+      <button class="btn-sm" style="flex:1;padding:12px" onclick="finishRatings()">Saltar</button>
+      <button class="btn-primary" style="flex:2;padding:12px" onclick="saveRatings()">Guardar valoraciones</button>
+    </div>
+  `;
+  document.getElementById('match-modal').classList.add('active');
+}
+
+window.setRating = function(name, value) {
+  currentRatings[name] = value;
+  const key = btoa(unescape(encodeURIComponent(name))).replace(/[^a-zA-Z0-9]/g,'');
+  const stars = document.querySelectorAll(`#stars-${key} .star-btn`);
+  stars.forEach((btn, i) => { btn.classList.toggle('active', i < value); });
+};
+
+window.saveRatings = function() {
+  if (pendingRatingMatchId !== null && Object.keys(currentRatings).length > 0) {
+    const match = db.matches.find(m => m.id === pendingRatingMatchId);
+    if (match) {
+      match.ratings = { ...(match.ratings || {}), ...currentRatings };
+      saveDB();
+    }
+  }
+  finishRatings();
+};
+
+window.finishRatings = function() {
+  pendingRatingMatchId = null;
+  currentRatings = {};
+  closeMatchModal();
+  renderRanking();
 };
 
 // ─────────────────────────────────────────
@@ -1062,7 +1443,7 @@ function renderPlayers() {
   }
   el.innerHTML = db.players.map((p, i) => `
     <div class="player-list-item" onclick="openPlayer('${escJs(p)}')">
-      ${avatarHtml(p, 36)}
+      ${avatarHtml(p, 36, {streak: hasFireStreak(p)})}
       <span class="pname">${playerDisplay(p)}</span>
       ${isAdmin ? `<button class="btn-danger" onclick="event.stopPropagation();removePlayer(${i})">✕</button>` : ''}
     </div>
@@ -1072,10 +1453,10 @@ function renderPlayers() {
 // ─────────────────────────────────────────
 //  NEW MATCH
 // ─────────────────────────────────────────
-let teamA = [], teamB = [], goalCounts = {}, selectedWinner = null;
+let teamA = [], teamB = [], goalCounts = {}, selectedWinner = null, selectedMvp = null;
 
 function initNewMatch() {
-  teamA = []; teamB = []; goalCounts = {}; selectedWinner = null;
+  teamA = []; teamB = []; goalCounts = {}; selectedWinner = null; selectedMvp = null;
   document.getElementById('match-date').value = todayStr();
   renderPlayersSelector();
   document.getElementById('goals-section').style.display = 'none';
@@ -1086,18 +1467,19 @@ function renderPlayersSelector() {
   const count = document.getElementById('teams-count');
   if (!db.players.length) {
     el.innerHTML = '<p style="color:var(--text3);font-size:0.82rem">Primero agregá jugadores.</p>';
-    count.textContent = '';
+    count.innerHTML = '';
     return;
   }
+  const circleIcon = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--text3);vertical-align:middle;margin-right:2px"></span>`;
   el.innerHTML = db.players.map((p, i) => {
     const inA = teamA.includes(p), inB = teamB.includes(p);
     const cls  = inA ? 'team-a' : inB ? 'team-b' : '';
-    const icon = inA ? '🔵' : inB ? '🔴' : '⬜';
-    return `<span class="player-tag ${cls}" onclick="togglePlayer(${i})">${icon} ${playerDisplay(p)}</span>`;
+    const icon = inA ? '🔵 ' : inB ? '🔴 ' : circleIcon;
+    return `<span class="player-tag ${cls}" onclick="togglePlayer(${i})">${icon}${playerDisplay(p)}</span>`;
   }).join('');
   const total = teamA.length + teamB.length;
-  count.textContent = total > 0
-    ? `🔵 Azul: ${teamA.length}  |  🔴 Rojo: ${teamB.length}  |  ⬜ Sin asignar: ${db.players.length - total}`
+  count.innerHTML = total > 0
+    ? `🔵 Azul: ${teamA.length} &nbsp;|&nbsp; 🔴 Rojo: ${teamB.length} &nbsp;|&nbsp; <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--text3);vertical-align:middle"></span> Sin asignar: ${db.players.length - total}`
     : '';
   checkTeamsReady();
 }
@@ -1108,13 +1490,19 @@ window.togglePlayer = function(i) {
   else if (teamA.includes(n))                     { teamA = teamA.filter(p => p !== n); teamB.push(n); }
   else                                             teamB = teamB.filter(p => p !== n);
   goalCounts = {};
+  if (selectedMvp && ![...teamA, ...teamB].includes(selectedMvp)) selectedMvp = null;
   renderPlayersSelector();
 };
 
 function checkTeamsReady() {
   const s = document.getElementById('goals-section');
-  if (teamA.length > 0 && teamB.length > 0) { s.style.display = 'block'; renderCounters(); }
-  else s.style.display = 'none';
+  if (teamA.length > 0 && teamB.length > 0) {
+    s.style.display = 'block';
+    renderCounters();
+    renderMvpSelector();
+  } else {
+    s.style.display = 'none';
+  }
 }
 
 function renderCounters() {
@@ -1149,16 +1537,40 @@ window.selectWinner = function(team) {
   document.getElementById('btn-win-b').classList.toggle('selected-b',    team === 'b');
 };
 
+function renderMvpSelector() {
+  const el = document.getElementById('mvp-selector');
+  if (!el) return;
+  const allPlayers = [...teamA, ...teamB];
+  el.innerHTML = allPlayers.map(p => `
+    <button class="mvp-avatar-btn ${selectedMvp === p ? 'selected' : ''}" onclick="selectMvp('${escJs(p)}')">
+      ${avatarHtml(p, 36)}
+      <span class="mvp-lbl">${escHtml(p)}</span>
+    </button>
+  `).join('');
+}
+
+window.selectMvp = function(name) {
+  selectedMvp = selectedMvp === name ? null : name;
+  renderMvpSelector();
+};
+
 window.saveMatch = function() {
   const date = document.getElementById('match-date').value;
   if (!date)           { alert('Seleccioná una fecha.'); return; }
   if (!teamA.length || !teamB.length) { alert('Armá los dos equipos.'); return; }
   if (!selectedWinner) { alert('Seleccioná quién ganó.'); return; }
-  db.matches.push({ id: Date.now(), date, teamA: [...teamA], teamB: [...teamB], winner: selectedWinner, goalCounts: {...goalCounts} });
+  const matchId = Date.now();
+  const allPlayers = [...teamA, ...teamB];
+  db.matches.push({
+    id: matchId, date,
+    teamA: [...teamA], teamB: [...teamB],
+    winner: selectedWinner,
+    goalCounts: {...goalCounts},
+    mvp: selectedMvp || null
+  });
   saveDB();
-  const label = selectedWinner === 'a' ? '🔵 Ganó Azul' : selectedWinner === 'b' ? '🔴 Ganó Rojo' : '🤝 Empate';
-  alert(`✅ Partido guardado!\n\n${label}`);
   initNewMatch();
+  openRatingsModal(matchId, allPlayers);
 };
 
 // ─────────────────────────────────────────
@@ -1167,7 +1579,12 @@ window.saveMatch = function() {
 const RANKING_DEFAULT = 3;
 const rankingExpanded = { goals: false, wins: false };
 
-function renderRanking() { renderGoalsRanking(); renderWinsRanking(); renderSummary(); }
+function renderRanking() {
+  renderGoalsRanking();
+  renderWinsRanking();
+  renderSummary();
+  renderWeeklyHighlights();
+}
 
 function calcGoals() {
   const g = {};
@@ -1204,7 +1621,7 @@ function renderGoalsRanking() {
   el.innerHTML = visible.map(([name, g], i) => `
     <div class="ranking-item" onclick="openPlayer('${escJs(name)}')">
       <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
-      ${avatarHtml(name, 32)}
+      ${avatarHtml(name, 32, {streak: hasFireStreak(name)})}
       <div class="rank-name">${playerDisplay(name)}</div>
       <div class="rank-value">${g} ⚽</div>
     </div>
@@ -1222,7 +1639,7 @@ function renderWinsRanking() {
   el.innerHTML = visible.map(([name, w, played], i) => `
     <div class="ranking-item" onclick="openPlayer('${escJs(name)}')">
       <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
-      ${avatarHtml(name, 32)}
+      ${avatarHtml(name, 32, {streak: hasFireStreak(name)})}
       <div class="rank-name">${playerDisplay(name)}</div>
       <div class="rank-value">${w} 🏆 <span style="font-size:0.72rem;color:var(--text3);font-weight:400">${played > 0 ? '('+played+' jug.)' : ''}</span></div>
     </div>
@@ -1244,6 +1661,94 @@ function renderSummary() {
   </div>`;
 }
 
+function renderWeeklyHighlights() {
+  const card = document.getElementById('ranking-highlights-card');
+  const el   = document.getElementById('ranking-highlights');
+  if (!el) return;
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const weekStr = sevenDaysAgo.toISOString().split('T')[0];
+
+  // MVP de la semana
+  const mvpCounts = {};
+  db.matches.forEach(m => {
+    if (m.date >= weekStr && m.mvp) mvpCounts[m.mvp] = (mvpCounts[m.mvp] || 0) + 1;
+  });
+  const topMvp = Object.entries(mvpCounts).sort((a,b) => b[1]-a[1])[0];
+
+  // Mayor racha actual
+  let topStreak = null, topStreakCount = 0;
+  db.players.forEach(p => {
+    const ms = db.matches
+      .filter(m => m.teamA.includes(p) || m.teamB.includes(p))
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+    let streak = 0;
+    for (const m of ms) {
+      const team = m.teamA.includes(p) ? 'a' : 'b';
+      const result = m.winner === 'draw' ? 'draw' : m.winner === team ? 'win' : 'loss';
+      if (streak === 0) { if (result !== 'win') break; streak = 1; }
+      else if (result === 'win') streak++;
+      else break;
+    }
+    if (streak > topStreakCount) { topStreakCount = streak; topStreak = p; }
+  });
+
+  // Más cervezas
+  const beerTotals = {};
+  db.players.forEach(p => {
+    const arr = (db.tardiness && db.tardiness[p]) || [];
+    const total = arr.reduce((sum, t) => sum + (t.beers || 0), 0);
+    if (total > 0) beerTotals[p] = total;
+  });
+  const topBeers = Object.entries(beerTotals).sort((a,b) => b[1]-a[1]).slice(0,3);
+
+  let html = '';
+  if (topMvp) {
+    html += `<div class="highlight-card" onclick="openPlayer('${escJs(topMvp[0])}')">
+      <div class="highlight-icon">⭐</div>
+      <div class="highlight-info">
+        <div class="highlight-label">MVP de la semana</div>
+        <div class="highlight-name">${escHtml(topMvp[0])}</div>
+        <div class="highlight-sub">${topMvp[1]} elección${topMvp[1] > 1 ? 'es' : ''} esta semana</div>
+      </div>
+      ${avatarHtml(topMvp[0], 36)}
+    </div>`;
+  }
+  if (topStreak && topStreakCount >= 2) {
+    html += `<div class="highlight-card" onclick="openPlayer('${escJs(topStreak)}')">
+      <div class="highlight-icon">🔥</div>
+      <div class="highlight-info">
+        <div class="highlight-label">Mejor racha actual</div>
+        <div class="highlight-name">${escHtml(topStreak)}</div>
+        <div class="highlight-sub">${topStreakCount} victoria${topStreakCount > 1 ? 's' : ''} seguida${topStreakCount > 1 ? 's' : ''}</div>
+      </div>
+      ${avatarHtml(topStreak, 36)}
+    </div>`;
+  }
+  if (topBeers.length > 0) {
+    html += `<div class="highlight-card">
+      <div class="highlight-icon">🍺</div>
+      <div class="highlight-info">
+        <div class="highlight-label">Más cervezas debe</div>
+        ${topBeers.map(([p, b]) => `
+          <div style="display:flex;align-items:center;gap:8px;margin-top:5px">
+            ${avatarHtml(p, 22)}
+            <span style="font-size:0.82rem;font-weight:600;flex:1" onclick="openPlayer('${escJs(p)}')">${escHtml(p)}</span>
+            <span style="font-size:0.78rem;color:var(--gold)">🍺×${b}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  if (html) {
+    el.innerHTML = html;
+    card.style.display = '';
+  } else {
+    card.style.display = 'none';
+  }
+}
+
 // ─────────────────────────────────────────
 //  HISTORIAL
 // ─────────────────────────────────────────
@@ -1260,6 +1765,7 @@ function renderHistorial() {
       const badge = w === 'a' ? '<span class="match-result-badge badge-win-a">🔵 Ganó Azul</span>'
                   : w === 'b' ? '<span class="match-result-badge badge-win-b">🔴 Ganó Rojo</span>'
                   : '<span class="match-result-badge badge-draw">🤝 Empate</span>';
+      const mvpBadge = m.mvp ? `<span class="match-result-badge" style="background:var(--gold-bg);color:var(--gold);border:1px solid rgba(245,158,11,0.3)">⭐ ${escHtml(m.mvp)}</span>` : '';
       return `<div class="match-card" onclick="openMatchModal(${m.id})">
         <div class="match-date">📅 ${formatDate(m.date)}</div>
         <div class="match-score-row">
@@ -1269,6 +1775,7 @@ function renderHistorial() {
         </div>
         <div class="match-footer">
           ${badge}
+          ${mvpBadge}
           ${isAdmin ? `<button class="btn-danger" onclick="event.stopPropagation();deleteMatch(${m.id})">🗑</button>` : ''}
         </div>
       </div>`;
@@ -1333,6 +1840,7 @@ document.getElementById('import-input').addEventListener('change', function(e) {
       if (!confirm(msg)) return;
       db = data;
       if (!db.playerPhotos) db.playerPhotos = {};
+      if (!db.tardiness)    db.tardiness    = {};
       saveDB();
       renderRanking();
       renderPlayers();
@@ -1351,36 +1859,34 @@ document.getElementById('import-input').addEventListener('change', function(e) {
 (async function() {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
-    // Datos locales encontrados → cargarlos
     db = JSON.parse(saved);
     if (!db.playerPhotos) db.playerPhotos = {};
-    // Migración: agregar jugadores nuevos si faltan
+    if (!db.tardiness)    db.tardiness    = {};
     ['Arman', 'Brunito'].forEach(p => {
       if (!db.players.includes(p)) db.players.push(p);
     });
     saveDB();
   } else {
-    // Sin datos locales (app reinstalada) → intentar restaurar desde la nube
     if (fireDB) {
       setCloudStatus('syncing');
       const cloudData = await loadFromCloud();
       if (cloudData && Array.isArray(cloudData.players) && Array.isArray(cloudData.matches)) {
         db = cloudData;
         if (!db.playerPhotos) db.playerPhotos = {};
+        if (!db.tardiness)    db.tardiness    = {};
         localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
         setCloudStatus('ok');
       } else {
-        db = { players: [...DEFAULT_PLAYERS], matches: [], playerPhotos: {} };
+        db = { players: [...DEFAULT_PLAYERS], matches: [], playerPhotos: {}, tardiness: {} };
         setCloudStatus('error');
       }
     } else {
-      db = { players: [...DEFAULT_PLAYERS], matches: [], playerPhotos: {} };
+      db = { players: [...DEFAULT_PLAYERS], matches: [], playerPhotos: {}, tardiness: {} };
       setCloudStatus('none');
     }
   }
   renderRanking();
   document.getElementById('match-date').value = todayStr();
-  // Inicializar UI de admin (ocultar controles de edición por defecto)
   document.getElementById('add-player-card').style.display = 'none';
   document.getElementById('import-btn').style.display      = 'none';
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
