@@ -15,15 +15,15 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <style>
     :root {
-      --bg:        #04060d;
-      --bg2:       #070a14;
-      --card:      #121a2e;
-      --card2:     #0d1424;
-      --border:    rgba(255,255,255,0.09);
-      --border2:   rgba(255,255,255,0.05);
+      --bg:        #091628;
+      --bg2:       #070f1e;
+      --card:      rgba(255,255,255,0.07);
+      --card2:     rgba(255,255,255,0.05);
+      --border:    rgba(255,255,255,0.11);
+      --border2:   rgba(255,255,255,0.07);
       --text:      #f1f5f9;
-      --text2:     #94a3b8;
-      --text3:     #4b6080;
+      --text2:     rgba(255,255,255,0.55);
+      --text3:     rgba(255,255,255,0.35);
       --accent:    #3b82f6;
       --accent2:   #60a5fa;
       --glow:      rgba(59,130,246,0.22);
@@ -39,36 +39,46 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Single fixed background layer — works on iOS Safari ── */
+    #bg-layer {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 130% 45% at 50% -5%, rgba(30,80,200,0.22) 0%, transparent 55%),
+        radial-gradient(ellipse 70% 60% at 5% 65%, rgba(15,55,160,0.14) 0%, transparent 55%),
+        linear-gradient(170deg, #0f1e3a 0%, #091628 50%, #060f20 100%);
+    }
+
+    html { background: #060f20; min-height: 100%; }
     html, body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       -webkit-tap-highlight-color: transparent;
     }
+    body { background: transparent; position: relative; z-index: 1; }
+    #app  { position: relative; z-index: 1; }
 
     /* ───── HEADER ───── */
     header {
-      background: linear-gradient(160deg, #030810 0%, #081a3a 60%, #0d1a38 100%);
-      padding: calc(20px + env(safe-area-inset-top)) 20px 16px;
+      background: transparent;
+      padding: calc(20px + env(safe-area-inset-top)) 20px 22px;
       text-align: center;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      position: relative;
     }
     header h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
-    header p  { font-size: 0.76rem; color: var(--accent2); margin-top: 3px; opacity: 0.8; }
+    header p  { font-size: 0.76rem; color: var(--accent2); margin-top: 3px; opacity: 0.75; }
 
     /* ───── NAV (bottom, iOS 26 / B&W style) ───── */
     nav {
       display: flex;
-      background: rgba(6, 6, 8, 0.97);
-      border-top: 1px solid rgba(255,255,255,0.07);
+      background: transparent;
+      border-top: 1px solid rgba(255,255,255,0.08);
       position: fixed;
       bottom: 0; left: 0; right: 0;
       z-index: 10;
       padding: 10px 0;
       padding-bottom: max(18px, env(safe-area-inset-bottom));
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
     }
     nav button {
       flex: 1;
@@ -95,24 +105,28 @@
 
     /* ───── TABS ───── */
     .tab { display: none; padding: 16px 16px calc(80px + env(safe-area-inset-bottom)); max-width: 520px; margin: 0 auto; }
-    .tab.active { display: block; }
+    .tab.active { display: block; animation: tabFadeIn 0.18s ease-out; }
+    @keyframes tabFadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
 
     /* ───── CARD ───── */
     .card {
-      background: var(--card);
-      border: 1px solid rgba(255,255,255,0.09);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
       border-radius: 18px;
       padding: 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+      margin-bottom: 10px;
+      box-shadow: none;
     }
     .card-title {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 700;
-      color: rgba(148,163,184,0.75);
+      color: rgba(255,255,255,0.45);
       margin-bottom: 14px;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 1.1px;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -123,7 +137,7 @@
       display: flex;
       align-items: center;
       padding: 10px 0;
-      border-bottom: 1px solid var(--border2);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
       gap: 10px;
       cursor: pointer;
       transition: opacity 0.15s;
@@ -140,36 +154,37 @@
     .pos-1 { background: #f59e0b; color: #000; }
     .pos-2 { background: #64748b; color: #fff; }
     .pos-3 { background: #92400e; color: #fff; }
-    .pos-other { background: var(--card2); color: var(--text3); }
+    .pos-other { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
 
-    .rank-name { flex: 1; font-size: 0.9rem; font-weight: 500; }
-    .rank-value { font-weight: 800; color: var(--accent2); font-size: 0.92rem; white-space: nowrap; }
+    .rank-name { flex: 1; font-size: 0.9rem; font-weight: 600; }
+    .rank-value { font-weight: 700; color: rgba(255,255,255,0.85); font-size: 0.9rem; white-space: nowrap; display:flex; align-items:center; gap:5px; }
 
     /* ───── SUMMARY / HIGHLIGHTS ───── */
     .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .sbox {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.07);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
       border-radius: 14px;
       padding: 14px 8px;
       text-align: center;
     }
     .sbox-icon  { font-size: 1.3rem; margin-bottom: 4px; }
-    .sbox-value { font-size: 1.45rem; font-weight: 800; color: #f1f5f9; }
-    .sbox-label { font-size: 0.64rem; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.6px; }
+    .sbox-value { font-size: 1.45rem; font-weight: 800; color: #ffffff; }
+    .sbox-label { font-size: 0.64rem; color: rgba(255,255,255,0.4); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.6px; }
 
     .highlight-card {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 16px; padding: 13px 14px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px; padding: 12px 14px;
       display: flex; align-items: center; gap: 12px;
-      margin-bottom: 8px; cursor: pointer; transition: background 0.15s;
+      margin-bottom: 8px; cursor: pointer; transition: opacity 0.15s;
     }
-    .highlight-card:active { background: rgba(255,255,255,0.08); }
+    .highlight-card:active { opacity: 0.6; }
     .highlight-icon { width: 36px; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.85); }
     .highlight-info { flex: 1; }
-    .highlight-label { font-size: 0.62rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+    .highlight-label { font-size: 0.62rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; }
     .highlight-name  { font-size: 0.92rem; font-weight: 700; margin-top: 2px; }
-    .highlight-sub   { font-size: 0.74rem; color: var(--text2); margin-top: 1px; }
+    .highlight-sub   { font-size: 0.74rem; color: rgba(255,255,255,0.55); margin-top: 1px; }
 
     /* ───── FORMS ───── */
     .form-group { margin-bottom: 14px; }
@@ -185,12 +200,12 @@
     input[type="text"], input[type="date"] {
       width: 100%;
       padding: 12px 14px;
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255,255,255,0.12);
       border-radius: 10px;
       font-size: 0.88rem;
       outline: none;
       color: var(--text);
-      background: var(--card2);
+      background: rgba(255,255,255,0.07);
       -webkit-appearance: none;
       appearance: none;
       box-sizing: border-box;
@@ -224,7 +239,9 @@
       font-size: 0.82rem;
       font-weight: 700;
       cursor: pointer;
+      transition: opacity 0.12s, transform 0.12s;
     }
+    .btn-sm:active { opacity: 0.7; transform: scale(0.97); }
     .btn-danger {
       background: none; border: none;
       color: var(--red); cursor: pointer;
@@ -293,6 +310,7 @@
       transition: all 0.15s; min-width: 54px;
     }
     .mvp-avatar-btn.selected { border-color: var(--gold); background: var(--gold-bg); }
+    .mvp-avatar-btn:active { transform: scale(0.92); }
     .mvp-lbl {
       font-size: 0.62rem; color: var(--text2); font-weight: 600;
       max-width: 54px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -302,9 +320,9 @@
     .match-card {
       background: var(--card); border: 1px solid var(--border);
       border-radius: 14px; padding: 14px; margin-bottom: 10px;
-      cursor: pointer; transition: border-color 0.15s;
+      cursor: pointer; transition: border-color 0.15s, transform 0.12s;
     }
-    .match-card:active { border-color: var(--accent); }
+    .match-card:active { border-color: var(--accent); transform: scale(0.985); }
     .match-date { font-size: 0.72rem; color: var(--text3); margin-bottom: 10px; }
     .match-score-row {
       display: flex; align-items: center; justify-content: space-between; gap: 8px;
@@ -351,10 +369,13 @@
     /* ───── SCREEN OVERLAY ───── */
     #screen-overlay {
       position: fixed; inset: 0;
-      background: var(--bg);
+      background:
+        radial-gradient(ellipse 130% 45% at 50% -5%, rgba(30,80,200,0.22) 0%, transparent 55%),
+        radial-gradient(ellipse 70% 60% at 5% 65%, rgba(15,55,160,0.14) 0%, transparent 55%),
+        linear-gradient(170deg, #0f1e3a 0%, #091628 50%, #060f20 100%);
       z-index: 50;
       transform: translateX(100%);
-      transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+      transition: transform 0.22s cubic-bezier(0.4,0,0.2,1);
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -363,8 +384,10 @@
     .screen-header {
       display: flex; align-items: center;
       padding: calc(14px + env(safe-area-inset-top)) 16px 14px;
-      border-bottom: 1px solid var(--border);
-      background: var(--header);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      background: rgba(12, 28, 60, 0.75);
+      backdrop-filter: blur(20px) saturate(150%);
+      -webkit-backdrop-filter: blur(20px) saturate(150%);
       position: sticky; top: 0; z-index: 5;
     }
     .back-btn {
@@ -373,17 +396,28 @@
       color: var(--accent2);
       font-size: 0.85rem; font-weight: 700;
       padding: 8px 16px; border-radius: 20px; cursor: pointer;
+      position: relative; z-index: 1;
+      transition: opacity 0.12s, transform 0.12s;
     }
+    .back-btn:active { opacity: 0.6; transform: scale(0.96); }
+    .screen-title {
+      position: absolute; left: 0; right: 0; text-align: center;
+      font-size: 0.92rem; font-weight: 700; color: var(--text);
+      pointer-events: none;
+      opacity: 0; transform: translateY(5px);
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+    .screen-title.visible { opacity: 1; transform: translateY(0); }
     #screen-content { padding: 0 16px 32px; max-width: 520px; margin: 0 auto; }
 
     /* ───── PLAYER PROFILE ───── */
     .profile-field-bg {
       position: relative;
       background:
-        linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.52) 100%),
-        url('https://images.unsplash.com/photo-1529900748604-07564a03e7a6?w=800&q=80') center/cover no-repeat;
-      background-color: #1a5c2c;
-      min-height: 230px;
+        linear-gradient(to bottom, transparent 0%, transparent 35%, rgba(0,0,0,0.98) 82%, #000 100%),
+        url('https://media.footballgroundguide.com/main/2024/03/West-Ham-London-Stadium.jpg') center 50%/cover no-repeat;
+      background-color: #1a0a10;
+      min-height: 210px;
       margin: 0 -16px;
       overflow: hidden;
     }
@@ -395,15 +429,18 @@
       backdrop-filter: blur(28px) saturate(160%);
       -webkit-backdrop-filter: blur(28px) saturate(160%);
       border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 24px;
-      padding: 22px 20px 16px;
-      margin: -125px 0 16px;
+      border-radius: 18px;
+      padding: 14px 16px 12px;
+      margin: -115px 0 14px;
       position: relative; z-index: 2;
       text-align: center;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+      box-shadow:
+        0 2px 4px rgba(0,0,0,0.5),
+        0 8px 24px rgba(0,0,0,0.6),
+        inset 0 1px 0 rgba(255,255,255,0.13);
     }
     .profile-avatar-wrap {
-      position: relative; display: inline-block; margin-bottom: 12px;
+      position: relative; display: inline-block; margin-bottom: 8px;
     }
     .avatar-edit-btn {
       position: absolute; bottom: 2px; right: 2px;
@@ -412,7 +449,7 @@
       color: #fff; font-size: 0.68rem;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
     }
-    .profile-name { font-size: 1.55rem; font-weight: 800; margin-bottom: 10px; }
+    .profile-name { font-size: 1.2rem; font-weight: 800; margin-bottom: 6px; }
 
     .badges-row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
     .badge-pill {
@@ -479,11 +516,11 @@
     /* ───── PROFILE MATCH CARDS ───── */
     .pm {
       display: flex; align-items: center; gap: 12px;
-      background: var(--card2); border: 1px solid var(--border2);
-      border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
-      cursor: pointer; transition: border-color 0.15s;
+      background: var(--card2); border: none;
+      border-radius: 12px; padding: 12px 14px; margin-bottom: 6px;
+      cursor: pointer; transition: opacity 0.15s;
     }
-    .pm:active { border-color: var(--accent); }
+    .pm:active { opacity: 0.6; }
     .pm-left { flex: 1; }
     .pm-date   { font-size: 0.7rem; color: var(--text3); margin-bottom: 3px; }
     .pm-result { font-size: 0.85rem; font-weight: 700; }
@@ -504,15 +541,17 @@
     .modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.72); }
     .modal-sheet {
       position: relative; width: 100%; max-width: 520px; margin: 0 auto;
-      background: var(--card); border: 1px solid var(--border);
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(30px) saturate(150%);
+      -webkit-backdrop-filter: blur(30px) saturate(150%);
       border-radius: 22px 22px 0 0; padding: 0 16px 36px;
       transform: translateY(100%);
-      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      transition: transform 0.22s cubic-bezier(0.4,0,0.2,1);
       max-height: 90vh; overflow-y: auto;
     }
     #match-modal.active .modal-sheet { transform: translateY(0); }
     .modal-handle {
-      width: 38px; height: 4px; background: var(--border2);
+      width: 38px; height: 4px; background: rgba(255,255,255,0.28);
       border-radius: 2px; margin: 14px auto 0;
     }
     .modal-close {
@@ -556,10 +595,36 @@
     .stars { display: flex; gap: 2px; }
     .star-btn {
       background: none; border: none; font-size: 1.3rem; cursor: pointer;
-      line-height: 1; transition: transform 0.1s; padding: 2px; color: #4b6080;
+      line-height: 1; transition: transform 0.1s; padding: 8px 6px; color: #4b6080;
+      min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center;
     }
     .star-btn.active { color: #f59e0b; }
-    .star-btn:active { transform: scale(1.2); }
+    .star-btn:active { transform: scale(1.25); }
+
+    /* ───── TOAST ───── */
+    #toast {
+      position: fixed; bottom: calc(90px + env(safe-area-inset-bottom));
+      left: 50%; transform: translateX(-50%) translateY(12px);
+      background: rgba(30,40,70,0.92);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: #fff; font-size: 0.84rem; font-weight: 600;
+      padding: 10px 20px; border-radius: 22px;
+      z-index: 200; pointer-events: none;
+      opacity: 0; transition: opacity 0.2s, transform 0.2s;
+      white-space: nowrap;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ───── HOVER STATES (desktop) ───── */
+    @media (hover: hover) {
+      .player-list-item:hover { background: rgba(255,255,255,0.04); border-radius: 10px; }
+      .match-card:hover { border-color: rgba(255,255,255,0.22); }
+      .mvp-avatar-btn:hover { background: rgba(255,255,255,0.06); }
+      .expand-btn:hover { opacity: 0.75; }
+      nav button:hover { color: rgba(255,255,255,0.7); }
+    }
     .rating-player-row {
       display: flex; align-items: center; gap: 10px;
       padding: 12px 0; border-bottom: 1px solid var(--border2);
@@ -585,6 +650,9 @@
   </style>
 </head>
 <body>
+
+<div id="bg-layer" aria-hidden="true"></div>
+<div id="toast" role="status" aria-live="polite"></div>
 
 <div id="app">
 
@@ -645,7 +713,7 @@
 <!-- ── NUEVO PARTIDO ── -->
 <div id="tab-nuevo" class="tab">
   <div id="nuevo-locked" class="empty" style="display:none">
-    <div class="big">🔒</div>
+    <div class="big"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.4"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
     <p>Solo el admin puede cargar partidos.<br>Tocá el candado del encabezado para entrar.</p>
   </div>
   <div id="nuevo-content">
@@ -657,29 +725,29 @@
   </div>
   <div class="card">
     <div class="card-title">Armar equipos</div>
-    <p class="hint">Tocá un jugador para asignarlo: ○ sin equipo → 🔵 Azul → 🔴 Rojo → ○</p>
+    <p class="hint">Tocá un jugador para asignarlo: ○ sin equipo → <span style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;vertical-align:middle"></span>Azul</span> → <span style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;vertical-align:middle"></span>Rojo</span> → ○</p>
     <div class="players-pool" id="players-selector"></div>
     <div id="teams-count" style="font-size:0.74rem;color:var(--text3);margin-top:6px"></div>
   </div>
   <div id="goals-section" style="display:none">
     <div class="card">
-      <div class="team-section-label a">🔵 Equipo Azul — Goles</div>
+      <div class="team-section-label a"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;vertical-align:middle;margin-right:5px"></span>Equipo Azul — Goles</div>
       <div id="team-a-counters"></div>
     </div>
     <div class="card">
-      <div class="team-section-label b">🔴 Equipo Rojo — Goles</div>
+      <div class="team-section-label b"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;vertical-align:middle;margin-right:5px"></span>Equipo Rojo — Goles</div>
       <div id="team-b-counters"></div>
     </div>
     <div class="card">
-      <div class="card-title">🏆 ¿Quién ganó?</div>
+      <div class="card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M6 3h12v10a6 6 0 0 1-12 0V3z"/><path d="M6 9H4a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-2"/><line x1="12" y1="19" x2="12" y2="21"/><line x1="8" y1="21" x2="16" y2="21"/></svg> ¿Quién ganó?</div>
       <div class="winner-selector">
-        <button id="btn-win-a"    class="winner-btn" onclick="selectWinner('a')">🔵 Azul</button>
-        <button id="btn-win-draw" class="winner-btn" onclick="selectWinner('draw')">🤝 Empate</button>
-        <button id="btn-win-b"    class="winner-btn" onclick="selectWinner('b')">🔴 Rojo</button>
+        <button id="btn-win-a"    class="winner-btn" onclick="selectWinner('a')" style="display:flex;align-items:center;justify-content:center;gap:6px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6"></span>Azul</button>
+        <button id="btn-win-draw" class="winner-btn" onclick="selectWinner('draw')" style="display:flex;align-items:center;justify-content:center;gap:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"/></svg>Empate</button>
+        <button id="btn-win-b"    class="winner-btn" onclick="selectWinner('b')" style="display:flex;align-items:center;justify-content:center;gap:6px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444"></span>Rojo</button>
       </div>
     </div>
     <div class="card">
-      <div class="card-title">⭐ MVP del partido <span style="color:var(--text3);font-weight:400;text-transform:none;font-size:0.72rem"> — opcional</span></div>
+      <div class="card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> MVP del partido <span style="color:var(--text3);font-weight:400;text-transform:none;font-size:0.72rem"> — opcional</span></div>
       <div class="mvp-selector" id="mvp-selector"></div>
     </div>
     <button class="btn-primary" onclick="saveMatch()">Guardar partido ✓</button>
@@ -691,7 +759,7 @@
 <!-- ── JUGADORES ── -->
 <div id="tab-jugadores" class="tab">
   <div class="card" id="add-player-card">
-    <div class="card-title">➕ Agregar jugador</div>
+    <div class="card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Agregar jugador</div>
     <div class="add-row">
       <input type="text" id="new-player-name" placeholder="Nombre del jugador"
              onkeydown="if(event.key==='Enter') addPlayer()">
@@ -709,8 +777,8 @@
     </p>
     <div id="cloud-status" style="font-size:0.76rem;text-align:center;margin-bottom:12px;min-height:18px"></div>
     <div style="display:flex;gap:8px">
-      <button class="btn-sm" style="flex:1;padding:12px" onclick="exportData()">⬇️ Exportar</button>
-      <button id="import-btn" class="btn-sm" style="flex:1;padding:12px" onclick="document.getElementById('import-input').click()">⬆️ Importar</button>
+      <button class="btn-sm" style="flex:1;padding:12px;display:flex;align-items:center;justify-content:center;gap:6px" onclick="exportData()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar</button>
+      <button id="import-btn" class="btn-sm" style="flex:1;padding:12px;display:flex;align-items:center;justify-content:center;gap:6px" onclick="document.getElementById('import-input').click()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Importar</button>
     </div>
   </div>
 </div>
@@ -725,35 +793,35 @@
   <div class="card">
     <div class="card-title">Reglas del grupo</div>
     <div class="rule-item">
-      <div class="rule-icon">✅</div>
+      <div class="rule-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
       <div class="rule-text">
         <div class="rule-title">A tiempo</div>
         <div class="rule-desc">Llegás antes de las 19:00 hs. Sin consecuencias.</div>
       </div>
     </div>
     <div class="rule-item">
-      <div class="rule-icon">🍺</div>
+      <div class="rule-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h12v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5z"/><path d="M17 9h1.5a1.5 1.5 0 0 1 0 3H17"/><path d="M8 5V3m4 2V3"/></svg></div>
       <div class="rule-text">
         <div class="rule-title">1 cerveza</div>
         <div class="rule-desc">Llegás después de las 19:00 hs (hasta las 19:10).</div>
       </div>
     </div>
     <div class="rule-item">
-      <div class="rule-icon">🍺🍺</div>
+      <div class="rule-icon" style="display:flex;align-items:center;gap:2px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h12v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5z"/><path d="M17 9h1.5a1.5 1.5 0 0 1 0 3H17"/><path d="M8 5V3m4 2V3"/></svg><span style="font-size:0.75rem;font-weight:800;color:rgba(255,255,255,0.7)">×2</span></div>
       <div class="rule-text">
         <div class="rule-title">2 cervezas</div>
         <div class="rule-desc">Llegás después de las 19:10 hs (hasta las 19:20).</div>
       </div>
     </div>
     <div class="rule-item">
-      <div class="rule-icon">🍺🍺🍺🍺</div>
+      <div class="rule-icon" style="display:flex;align-items:center;gap:2px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h12v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5z"/><path d="M17 9h1.5a1.5 1.5 0 0 1 0 3H17"/><path d="M8 5V3m4 2V3"/></svg><span style="font-size:0.75rem;font-weight:800;color:rgba(255,255,255,0.7)">×4</span></div>
       <div class="rule-text">
         <div class="rule-title">4 cervezas</div>
         <div class="rule-desc">Llegás después de las 19:20 hs o más tarde.</div>
       </div>
     </div>
     <div class="rule-item">
-      <div class="rule-icon">🚫</div>
+      <div class="rule-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
       <div class="rule-text">
         <div class="rule-title">Media cancha</div>
         <div class="rule-desc">Ausencia sin previo aviso. Pagás la mitad de la cancha.</div>
@@ -763,7 +831,7 @@
   <div class="card">
     <div class="card-title">Valoraciones</div>
     <div class="rule-item">
-      <div class="rule-icon">⭐</div>
+      <div class="rule-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
       <div class="rule-text">
         <div class="rule-title">Calificación por partido</div>
         <div class="rule-desc">Al terminar cada partido, el admin puede calificar a cada jugador del 1 al 5. Estas valoraciones se promedian en el perfil de cada uno.</div>
@@ -773,7 +841,7 @@
   <div class="card">
     <div class="card-title">MVP del partido</div>
     <div class="rule-item">
-      <div class="rule-icon">🏆</div>
+      <div class="rule-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v10a6 6 0 0 1-12 0V3z"/><path d="M6 9H4a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-2"/><line x1="12" y1="19" x2="12" y2="21"/><line x1="8" y1="21" x2="16" y2="21"/></svg></div>
       <div class="rule-text">
         <div class="rule-title">Mejor jugador del partido</div>
         <div class="rule-desc">El admin elige al MVP de cada partido. Se acumula en el perfil y en los highlights de la semana.</div>
@@ -788,6 +856,7 @@
 <div id="screen-overlay">
   <div class="screen-header">
     <button class="back-btn" onclick="popScreen()">‹ Volver</button>
+    <span id="screen-title" class="screen-title"></span>
   </div>
   <div id="screen-content"></div>
 </div>
@@ -867,10 +936,10 @@ function setCloudStatus(state) {
   const el = document.getElementById('cloud-status');
   if (!el) return;
   const now = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-  if      (state === 'syncing') { el.textContent = '🔄 Guardando en la nube…';   el.style.color = 'var(--text3)'; }
-  else if (state === 'ok')      { el.textContent = '☁️ Sincronizado · ' + now;    el.style.color = 'var(--green)'; }
-  else if (state === 'error')   { el.textContent = '⚠️ Sin conexión a la nube';   el.style.color = 'var(--red)'; }
-  else if (state === 'none')    { el.textContent = '⚙️ Backup en la nube no configurado'; el.style.color = 'var(--text3)'; }
+  if      (state === 'syncing') { el.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Guardando en la nube…`; el.style.color = 'var(--text3)'; }
+  else if (state === 'ok')      { el.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>Sincronizado · ${now}`; el.style.color = 'var(--green)'; }
+  else if (state === 'error')   { el.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Sin conexión a la nube`; el.style.color = 'var(--red)'; }
+  else if (state === 'none')    { el.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>Backup en la nube no configurado`; el.style.color = 'var(--text3)'; }
 }
 
 const DEFAULT_PLAYERS = [
@@ -881,9 +950,31 @@ const DEFAULT_PLAYERS = [
   'Paul', 'Toto', 'Chapa', 'Arman', 'Brunito'
 ];
 
+// ─── Haptic feedback (iOS / Android) ───
+function haptic(style) {
+  if (navigator.vibrate) navigator.vibrate(style === 'heavy' ? 18 : style === 'light' ? 6 : 10);
+}
+
+// ─── Toast notification ───
+let _toastTimer = null;
+function showToast(msg, duration = 2000) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), duration);
+}
+
+// ─── playerColor cache (populated by playerColor function below) ───
+const _colorCache = {};
+
+// ─── Debounced cloud save ───
+let _cloudSaveTimer = null;
 function saveDB() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-  saveToCloud();
+  clearTimeout(_cloudSaveTimer);
+  _cloudSaveTimer = setTimeout(saveToCloud, 1500);
 }
 
 // ─────────────────────────────────────────
@@ -891,6 +982,33 @@ function saveDB() {
 // ─────────────────────────────────────────
 const SVG_LOCKED   = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;
 const SVG_UNLOCKED = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>`;
+const SVG_TROPHY = `<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v10a6 6 0 0 1-12 0V3z"/><path d="M6 9H4a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-2"/><line x1="12" y1="19" x2="12" y2="21"/><line x1="8" y1="21" x2="16" y2="21"/></svg>`;
+const SVG_BALL   = `<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20"/><path d="M2 12h20"/></svg>`;
+const SVG_STAR_SM = `<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
+
+// Helper to build a consistent icon SVG
+const _i = (d, w=15) => `<svg style="display:inline-block;vertical-align:middle;flex-shrink:0" width="${w}" height="${w}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+
+const SVG_BEER     = _i(`<path d="M5 5h12v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5z"/><path d="M17 9h1.5a1.5 1.5 0 0 1 0 3H17"/><path d="M8 5V3m4 2V3"/>`);
+const SVG_USERS    = _i(`<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>`);
+const SVG_CALENDAR = _i(`<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>`);
+const SVG_CAMERA   = _i(`<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>`);
+const SVG_PERSON   = _i(`<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>`);
+const SVG_CHECK_C  = _i(`<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>`);
+const SVG_X_C      = _i(`<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>`);
+const SVG_TRASH    = _i(`<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>`);
+const SVG_DOWN     = _i(`<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>`);
+const SVG_UP       = _i(`<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>`);
+const SVG_REFRESH  = _i(`<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>`);
+const SVG_CLOUD    = _i(`<path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>`);
+const SVG_FIRE     = _i(`<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>`);
+const SVG_COLD     = _i(`<line x1="12" y1="2" x2="12" y2="22"/><path d="m20 10-8 2-8-2"/><path d="m20 14-8-2-8 2"/><path d="m15 4-3 3-3-3"/><path d="m15 20-3-3-3 3"/>`);
+const SVG_FROWN    = _i(`<circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/>`);
+const SVG_WHISTLE  = _i(`<rect x="2" y="5" width="20" height="14" rx="1.5"/><line x1="12" y1="5" x2="12" y2="19"/><circle cx="12" cy="12" r="2.5"/><rect x="2" y="8.5" width="4" height="7" rx="0.5"/><rect x="18" y="8.5" width="4" height="7" rx="0.5"/>`);
+const SVG_STAR_LG  = _i(`<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>`, 20);
+const SVG_TROPHY_LG = _i(`<path d="M6 3h12v10a6 6 0 0 1-12 0V3z"/><path d="M6 9H4a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-2"/><line x1="12" y1="19" x2="12" y2="21"/><line x1="8" y1="21" x2="16" y2="21"/>`, 20);
+const DOT_BLUE = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;flex-shrink:0;vertical-align:middle"></span>`;
+const DOT_RED  = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;vertical-align:middle"></span>`;
 
 window.toggleAdmin = function() {
   if (isAdmin) {
@@ -936,10 +1054,11 @@ function playerInitials(name) {
 }
 
 function playerColor(name) {
+  if (_colorCache[name]) return _colorCache[name];
   let h = 0;
   for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
   const cols = ['#e11d48','#7c3aed','#0891b2','#059669','#d97706','#0369a1','#9333ea','#0d9488'];
-  return cols[Math.abs(h) % cols.length];
+  return (_colorCache[name] = cols[Math.abs(h) % cols.length]);
 }
 
 function avatarHtml(name, size, options) {
@@ -1040,16 +1159,16 @@ function playerBadges(name, stats) {
   const badges = [];
   const gs = calcGoals();
   if (gs.length && gs[0][0] === name && gs[0][1] > 0)
-    badges.push({ type:'gold', icon:'🎯', label:'Goleador #1' });
+    badges.push({ type:'gold', icon: SVG_BALL, label:'Goleador #1' });
   const ws = calcWins();
   if (ws.length && ws[0][0] === name && ws[0][1] > 0)
-    badges.push({ type:'gold', icon:'👑', label:'Más victorias' });
+    badges.push({ type:'gold', icon: SVG_TROPHY, label:'Más victorias' });
   if (stats.streakType === 'win'  && stats.streak >= 3)
-    badges.push({ type:'fire', icon:'🔥', label:'Racha ' + stats.streak });
+    badges.push({ type:'fire', icon: SVG_FIRE, label:'Racha ' + stats.streak });
   if (stats.streakType === 'loss' && stats.streak >= 3)
-    badges.push({ type:'fire', icon:'😰', label:'Mala racha ' + stats.streak });
+    badges.push({ type:'fire', icon: SVG_FROWN, label:'Mala racha ' + stats.streak });
   if (stats.mvpCount > 0)
-    badges.push({ type:'gold', icon:'⭐', label:'MVP ×' + stats.mvpCount });
+    badges.push({ type:'gold', icon: SVG_STAR_SM, label:'MVP ×' + stats.mvpCount });
   return badges;
 }
 
@@ -1057,12 +1176,18 @@ function playerBadges(name, stats) {
 //  SCREEN NAVIGATION
 // ─────────────────────────────────────────
 function pushScreen(html) {
+  if (profileObserver) { profileObserver.disconnect(); profileObserver = null; }
+  const titleEl = document.getElementById('screen-title');
+  if (titleEl) { titleEl.textContent = ''; titleEl.classList.remove('visible'); }
   document.getElementById('screen-content').innerHTML = html;
   document.getElementById('screen-overlay').classList.add('active');
   document.getElementById('screen-overlay').scrollTop = 0;
 }
 
 function popScreen() {
+  if (profileObserver) { profileObserver.disconnect(); profileObserver = null; }
+  const titleEl = document.getElementById('screen-title');
+  if (titleEl) { titleEl.textContent = ''; titleEl.classList.remove('visible'); }
   document.getElementById('screen-overlay').classList.remove('active');
 }
 
@@ -1070,6 +1195,7 @@ function popScreen() {
 //  PLAYER PROFILE
 // ─────────────────────────────────────────
 let currentEditPlayer = null;
+let profileObserver = null;
 
 window.openPlayer = function(name) {
   const s = playerStats(name);
@@ -1077,7 +1203,7 @@ window.openPlayer = function(name) {
 
   const badgesHtml = badges.length
     ? `<div class="badges-row">${badges.map(b =>
-        `<span class="badge-pill ${b.type}">${b.icon} ${b.label}</span>`).join('')}</div>`
+        `<span class="badge-pill ${b.type}">${b.label}</span>`).join('')}</div>`
     : '';
 
   // SVG ring with animation
@@ -1098,7 +1224,7 @@ window.openPlayer = function(name) {
   const partnerHtml = s.bestPartner
     ? `<div class="partner-card" onclick="openPlayer('${escJs(s.bestPartner)}')">
         <div style="flex-shrink:0">
-          <div style="font-size:0.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">🤝 Mejor socio</div>
+          <div style="font-size:0.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;display:flex;align-items:center;gap:4px">${SVG_USERS} Mejor socio</div>
           <div style="display:flex;align-items:center;gap:10px">
             ${avatarHtml(s.bestPartner, 40)}
             <div>
@@ -1123,7 +1249,7 @@ window.openPlayer = function(name) {
     ${tardinessArr.length === 0
       ? `<p style="font-size:0.8rem;color:var(--text3);padding:4px 0 8px">Sin registros.</p>`
       : tardinessArr.slice(0, 6).map((t, i) => {
-          const icon = t.type === 'absent' ? '🚫' : t.beers === 1 ? '🍺' : t.beers === 2 ? '🍺🍺' : '🍺🍺🍺🍺';
+          const icon = t.type === 'absent' ? SVG_X_C : t.beers === 1 ? SVG_BEER : t.beers === 2 ? `${SVG_BEER}<span style="font-size:0.7rem;font-weight:800">×2</span>` : `${SVG_BEER}<span style="font-size:0.7rem;font-weight:800">×4</span>`;
           const desc = t.type === 'absent' ? 'Ausente sin aviso' : `${t.beers} cerveza${t.beers > 1 ? 's' : ''}`;
           return `<div class="tardiness-item">
             <span style="font-size:1.1rem">${icon}</span>
@@ -1139,20 +1265,20 @@ window.openPlayer = function(name) {
 
   // Recent matches
   const recentHtml = s.matches.length === 0
-    ? `<div class="empty"><div class="big">📋</div><p>Sin partidos todavía.</p></div>`
+    ? `<div class="empty"><div class="big">${_i(`<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>`, 44)}</div><p>Sin partidos todavía.</p></div>`
     : s.matches.slice(0, 8).map(m => {
         const team   = m.teamA.includes(name) ? 'a' : 'b';
         const result = m.winner === 'draw' ? 'draw' : m.winner === team ? 'win' : 'loss';
-        const label  = result === 'win' ? '✅ Victoria' : result === 'loss' ? '❌ Derrota' : '🤝 Empate';
+        const label  = result === 'win' ? 'Victoria' : result === 'loss' ? 'Derrota' : 'Empate';
         const myGoals = (m.goalCounts && m.goalCounts[name]) || 0;
-        const mvpTag  = m.mvp === name ? ' <span style="color:var(--gold);font-size:0.72rem">⭐ MVP</span>' : '';
+        const mvpTag  = m.mvp === name ? ` <span style="display:inline-flex;align-items:center;gap:2px;color:var(--gold);font-size:0.7rem">${SVG_STAR_SM} MVP</span>` : '';
         const myRating = m.ratings && m.ratings[name];
         const starsHtml = myRating ? `<div class="pm-goals" style="color:var(--gold)">${'★'.repeat(myRating)}${'☆'.repeat(5-myRating)}</div>` : '';
         return `<div class="pm" onclick="openMatchModal(${m.id})">
           <div class="pm-left">
-            <div class="pm-date">📅 ${formatDate(m.date)}</div>
+            <div class="pm-date">${formatDate(m.date)}</div>
             <div class="pm-result ${result}">${label}${mvpTag}</div>
-            ${myGoals > 0 ? `<div class="pm-goals">⚽ ${myGoals} gol${myGoals > 1 ? 'es' : ''}</div>` : ''}
+            ${myGoals > 0 ? `<div class="pm-goals" style="display:flex;align-items:center;gap:3px">${SVG_BALL} ${myGoals} gol${myGoals > 1 ? 'es' : ''}</div>` : ''}
             ${starsHtml}
           </div>
           <div class="pm-arrow">›</div>
@@ -1161,7 +1287,7 @@ window.openPlayer = function(name) {
 
   // Streak display
   const streakVal = s.streak > 1
-    ? `<span style="font-size:1.1rem">${s.streakType==='win'?'🔥':'❄️'}</span>${s.streak}`
+    ? `${s.streakType==='win'?SVG_FIRE:SVG_COLD}${s.streak}`
     : '—';
   const streakColor = s.streakType==='win' ? 'color:var(--green)' : s.streakType==='loss' ? 'color:var(--red)' : '';
 
@@ -1180,8 +1306,8 @@ window.openPlayer = function(name) {
     </div>
     <div class="profile-glass-card">
       <div class="profile-avatar-wrap">
-        ${avatarHtml(name, 82, {streak: s.streakType==='win' && s.streak >= 3})}
-        <button class="avatar-edit-btn" onclick="triggerPhoto('${escJs(name)}')">📷</button>
+        ${avatarHtml(name, 58, {streak: s.streakType==='win' && s.streak >= 3})}
+        <button class="avatar-edit-btn" onclick="triggerPhoto('${escJs(name)}')">${SVG_CAMERA}</button>
       </div>
       <div class="profile-name">${playerDisplay(name)}</div>
       ${badgesHtml}
@@ -1246,6 +1372,21 @@ window.openPlayer = function(name) {
     ${recentHtml}
     <div class="spacer"></div>
   `);
+
+  // iOS-style: show player name in header when glass card scrolls out of view
+  const titleEl = document.getElementById('screen-title');
+  if (titleEl) {
+    titleEl.textContent = playerDisplay(name);
+    titleEl.classList.remove('visible');
+    const glassCard = document.querySelector('.profile-glass-card');
+    if (glassCard) {
+      profileObserver = new IntersectionObserver(
+        ([entry]) => titleEl.classList.toggle('visible', !entry.isIntersecting),
+        { root: document.getElementById('screen-overlay'), threshold: 0.15 }
+      );
+      profileObserver.observe(glassCard);
+    }
+  }
 };
 
 window.triggerPhoto = function(name) {
@@ -1283,18 +1424,18 @@ document.getElementById('photo-input').addEventListener('change', function(e) {
 // ─────────────────────────────────────────
 window.openTardinessSheet = function(name) {
   document.getElementById('modal-body').innerHTML = `
-    <div class="modal-title">🍺 Registrar llegada — ${escHtml(name)}</div>
+    <div class="modal-title" style="display:flex;align-items:center;gap:6px">${SVG_BEER} Registrar llegada — ${escHtml(name)}</div>
     <div style="margin-bottom:16px">
       <label style="font-size:0.74rem;font-weight:700;color:var(--text2);display:block;margin-bottom:6px">FECHA</label>
       <input type="date" id="tardiness-date" value="${todayStr()}"
         style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card2);color:var(--text);font-size:0.88rem">
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn-sm" style="padding:13px;text-align:left;font-size:0.85rem" onclick="saveTardiness('${escJs(name)}','on-time',0)">✅ A tiempo</button>
-      <button class="btn-sm" style="padding:13px;text-align:left;font-size:0.85rem" onclick="saveTardiness('${escJs(name)}','late1',1)">🍺 1 cerveza — llegó después de las 19:00</button>
-      <button class="btn-sm" style="padding:13px;text-align:left;font-size:0.85rem" onclick="saveTardiness('${escJs(name)}','late2',2)">🍺🍺 2 cervezas — después de las 19:10</button>
-      <button class="btn-sm" style="padding:13px;text-align:left;font-size:0.85rem" onclick="saveTardiness('${escJs(name)}','late4',4)">🍺🍺🍺🍺 4 cervezas — después de las 19:20</button>
-      <button class="btn-sm" style="padding:13px;text-align:left;font-size:0.85rem;color:var(--red);border-color:var(--red)" onclick="saveTardiness('${escJs(name)}','absent',0)">🚫 Ausente sin aviso — media cancha</button>
+      <button class="btn-sm" style="padding:13px;text-align:left;font-size:0.85rem;display:flex;align-items:center;gap:8px" onclick="saveTardiness('${escJs(name)}','on-time',0)">${SVG_CHECK_C} A tiempo</button>
+      <button class="btn-sm" style="padding:13px;text-align:left;font-size:0.85rem;display:flex;align-items:center;gap:8px" onclick="saveTardiness('${escJs(name)}','late1',1)">${SVG_BEER} 1 cerveza — llegó después de las 19:00</button>
+      <button class="btn-sm" style="padding:13px;text-align:left;font-size:0.85rem;display:flex;align-items:center;gap:8px" onclick="saveTardiness('${escJs(name)}','late2',2)">${SVG_BEER}<span style="font-size:0.75rem;font-weight:800">×2</span> 2 cervezas — después de las 19:10</button>
+      <button class="btn-sm" style="padding:13px;text-align:left;font-size:0.85rem;display:flex;align-items:center;gap:8px" onclick="saveTardiness('${escJs(name)}','late4',4)">${SVG_BEER}<span style="font-size:0.75rem;font-weight:800">×4</span> 4 cervezas — después de las 19:20</button>
+      <button class="btn-sm" style="padding:13px;text-align:left;font-size:0.85rem;display:flex;align-items:center;gap:8px;color:var(--red);border-color:var(--red)" onclick="saveTardiness('${escJs(name)}','absent',0)">${SVG_X_C} Ausente sin aviso — media cancha</button>
     </div>
   `;
   document.getElementById('match-modal').classList.add('active');
@@ -1308,9 +1449,16 @@ window.saveTardiness = function(name, type, beers) {
   if (type !== 'on-time') {
     db.tardiness[name].unshift({ date, type, beers: beers || 0 });
     saveDB();
+    haptic('medium');
+    closeMatchModal();
+    openPlayer(name);
+    setTimeout(() => showToast('Registro guardado ✓'), 350);
+  } else {
+    haptic('light');
+    closeMatchModal();
+    openPlayer(name);
+    showToast('¡A tiempo! 👍', 1800);
   }
-  closeMatchModal();
-  openPlayer(name);
 };
 
 window.deleteTardiness = function(name, idx) {
@@ -1329,10 +1477,10 @@ window.openMatchModal = function(id) {
   const w = m.winner || 'draw';
 
   const badge = w === 'a'
-    ? `<span class="modal-result-badge badge-win-a">🔵 Ganó Equipo Azul</span>`
+    ? `<span class="modal-result-badge badge-win-a" style="display:inline-flex;align-items:center;gap:4px">${DOT_BLUE} Ganó Equipo Azul</span>`
     : w === 'b'
-    ? `<span class="modal-result-badge badge-win-b">🔴 Ganó Equipo Rojo</span>`
-    : `<span class="modal-result-badge badge-draw">🤝 Empate</span>`;
+    ? `<span class="modal-result-badge badge-win-b" style="display:inline-flex;align-items:center;gap:4px">${DOT_RED} Ganó Equipo Rojo</span>`
+    : `<span class="modal-result-badge badge-draw" style="display:inline-flex;align-items:center;gap:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"/></svg>Empate</span>`;
 
   function teamHtml(players) {
     return players.map(p => {
@@ -1340,8 +1488,8 @@ window.openMatchModal = function(id) {
       return `<div class="modal-player">
         ${avatarHtml(p, 24)}
         <span>${escHtml(p)}</span>
-        ${g > 0 ? `<span class="goal-tag">⚽${g}</span>` : ''}
-        ${m.mvp === p ? `<span style="color:var(--gold);font-size:0.8rem;margin-left:auto">⭐</span>` : ''}
+        ${g > 0 ? `<span class="goal-tag">${SVG_BALL}${g}</span>` : ''}
+        ${m.mvp === p ? `<span style="color:var(--gold);margin-left:auto">${SVG_STAR_SM}</span>` : ''}
       </div>`;
     }).join('');
   }
@@ -1353,7 +1501,7 @@ window.openMatchModal = function(id) {
   const ratedPlayers = [...m.teamA, ...m.teamB].filter(p => m.ratings && m.ratings[p] !== undefined);
   const ratingsHtml = ratedPlayers.length > 0
     ? `<div style="margin-top:14px">
-        <div style="font-size:0.64rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;text-align:center">⭐ Valoraciones</div>
+        <div style="font-size:0.64rem;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px">${SVG_STAR_SM} Valoraciones</div>
         ${ratedPlayers.map(p => `
           <div style="display:flex;align-items:center;gap:8px;padding:4px 0">
             ${avatarHtml(p, 22)}
@@ -1365,9 +1513,9 @@ window.openMatchModal = function(id) {
   document.getElementById('modal-body').innerHTML = `
     <div class="modal-title">Detalle del partido</div>
     ${badge}
-    <div class="modal-date">📅 ${formatDate(m.date)}</div>
+    <div class="modal-date" style="display:flex;align-items:center;gap:5px">${SVG_CALENDAR} ${formatDate(m.date)}</div>
     ${m.mvp ? `<div style="text-align:center;margin-bottom:14px;padding:8px 16px;background:var(--gold-bg);border:1px solid rgba(245,158,11,0.3);border-radius:12px">
-      <div style="font-size:0.65rem;color:var(--gold);font-weight:800;text-transform:uppercase;letter-spacing:0.5px">⭐ MVP del partido</div>
+      <div style="font-size:0.65rem;color:var(--gold);font-weight:800;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:4px">${SVG_STAR_SM} MVP del partido</div>
       <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px">
         ${avatarHtml(m.mvp, 28)}
         <span style="font-weight:700;font-size:0.9rem">${escHtml(m.mvp)}</span>
@@ -1375,11 +1523,11 @@ window.openMatchModal = function(id) {
     </div>` : ''}
     <div class="modal-teams">
       <div class="modal-team">
-        <div class="modal-team-label ${labelA}">🔵 Azul ${w==='a'?'🏆':''}</div>
+        <div class="modal-team-label ${labelA}" style="display:flex;align-items:center;gap:4px">${DOT_BLUE} Azul ${w==='a'?SVG_TROPHY:''}</div>
         ${teamHtml(m.teamA)}
       </div>
       <div class="modal-team">
-        <div class="modal-team-label ${labelB}">🔴 Rojo ${w==='b'?'🏆':''}</div>
+        <div class="modal-team-label ${labelB}" style="display:flex;align-items:center;gap:4px">${DOT_RED} Rojo ${w==='b'?SVG_TROPHY:''}</div>
         ${teamHtml(m.teamB)}
       </div>
     </div>
@@ -1415,7 +1563,7 @@ function openRatingsModal(matchId, players) {
   `).join('');
 
   document.getElementById('modal-body').innerHTML = `
-    <div class="modal-title">✅ ¡Partido guardado!</div>
+    <div class="modal-title" style="display:flex;align-items:center;justify-content:center;gap:6px">${SVG_CHECK_C} ¡Partido guardado!</div>
     <p style="text-align:center;font-size:0.8rem;color:var(--text2);margin-bottom:16px">Valorá a los jugadores (opcional)</p>
     ${rowsHtml}
     <div style="display:flex;gap:8px;margin-top:20px">
@@ -1475,11 +1623,13 @@ window.showTab = function(name, btn) {
 window.addPlayer = function() {
   const input = document.getElementById('new-player-name');
   const name  = input.value.trim();
-  if (!name) return;
-  if (db.players.includes(name)) { alert(`Ya existe "${name}".`); return; }
+  if (!name || name.length < 2) { showToast('El nombre debe tener al menos 2 caracteres'); return; }
+  if (db.players.includes(name)) { showToast(`"${name}" ya existe`); return; }
   db.players.push(name);
   saveDB();
   input.value = '';
+  haptic('medium');
+  showToast(`${name} agregado ✓`);
   renderPlayers();
 };
 
@@ -1494,7 +1644,7 @@ window.removePlayer = function(index) {
 function renderPlayers() {
   const el = document.getElementById('players-list');
   if (!db.players.length) {
-    el.innerHTML = '<div class="empty"><div class="big">👤</div><p>No hay jugadores todavía.</p></div>';
+    el.innerHTML = `<div class="empty"><div class="big">${_i(`<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>`, 44)}</div><p>No hay jugadores todavía.</p></div>`;
     return;
   }
   el.innerHTML = db.players.map((p, i) => `
@@ -1530,12 +1680,12 @@ function renderPlayersSelector() {
   el.innerHTML = db.players.map((p, i) => {
     const inA = teamA.includes(p), inB = teamB.includes(p);
     const cls  = inA ? 'team-a' : inB ? 'team-b' : '';
-    const icon = inA ? '🔵 ' : inB ? '🔴 ' : circleIcon;
+    const icon = inA ? `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;flex-shrink:0;vertical-align:middle;margin-right:3px"></span>` : inB ? `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;vertical-align:middle;margin-right:3px"></span>` : circleIcon;
     return `<span class="player-tag ${cls}" onclick="togglePlayer(${i})">${icon}${playerDisplay(p)}</span>`;
   }).join('');
   const total = teamA.length + teamB.length;
   count.innerHTML = total > 0
-    ? `🔵 Azul: ${teamA.length} &nbsp;|&nbsp; 🔴 Rojo: ${teamB.length} &nbsp;|&nbsp; <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--text3);vertical-align:middle"></span> Sin asignar: ${db.players.length - total}`
+    ? `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;vertical-align:middle;margin-right:3px"></span>Azul: ${teamA.length} &nbsp;|&nbsp; <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;vertical-align:middle;margin-right:3px"></span>Rojo: ${teamB.length} &nbsp;|&nbsp; <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.3);vertical-align:middle;margin-right:3px"></span>Sin asignar: ${db.players.length - total}`
     : '';
   checkTeamsReady();
 }
@@ -1581,12 +1731,15 @@ function renderTeamCounters(cid, players, team) {
 
 window.changeGoal = function(team, idx, delta) {
   const p = (team === 'a' ? teamA : teamB)[idx];
-  goalCounts[p] = Math.max(0, (goalCounts[p] || 0) + delta);
+  const prev = goalCounts[p] || 0;
+  goalCounts[p] = Math.max(0, prev + delta);
+  if (goalCounts[p] !== prev) haptic('light');
   document.getElementById(`gc-${team}-${idx}`).textContent = goalCounts[p];
 };
 
 window.selectWinner = function(team) {
   selectedWinner = team;
+  haptic('light');
   document.querySelectorAll('.winner-btn').forEach(b => b.className = 'winner-btn');
   document.getElementById('btn-win-a').classList.toggle('selected-a',    team === 'a');
   document.getElementById('btn-win-draw').classList.toggle('selected-draw', team === 'draw');
@@ -1607,6 +1760,7 @@ function renderMvpSelector() {
 
 window.selectMvp = function(name) {
   selectedMvp = selectedMvp === name ? null : name;
+  haptic('light');
   renderMvpSelector();
 };
 
@@ -1625,6 +1779,8 @@ window.saveMatch = function() {
     mvp: selectedMvp || null
   });
   saveDB();
+  haptic('heavy');
+  showToast('Partido guardado ✓');
   initNewMatch();
   openRatingsModal(matchId, allPlayers);
 };
@@ -1679,7 +1835,7 @@ function renderGoalsRanking() {
       <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
       ${avatarHtml(name, 32, {streak: hasFireStreak(name)})}
       <div class="rank-name">${playerDisplay(name)}</div>
-      <div class="rank-value">${g} ⚽</div>
+      <div class="rank-value">${g} ${SVG_BALL}</div>
     </div>
   `).join('') + collapse;
   btn.style.display = !rankingExpanded.goals && sorted.length > RANKING_DEFAULT ? 'block' : 'none';
@@ -1697,7 +1853,7 @@ function renderWinsRanking() {
       <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
       ${avatarHtml(name, 32, {streak: hasFireStreak(name)})}
       <div class="rank-name">${playerDisplay(name)}</div>
-      <div class="rank-value">${w} 🏆 <span style="font-size:0.72rem;color:var(--text3);font-weight:400">${played > 0 ? '('+played+' jug.)' : ''}</span></div>
+      <div class="rank-value">${w} ${SVG_TROPHY}</div>
     </div>
   `).join('') + collapse;
   btn.style.display = !rankingExpanded.wins && sorted.length > RANKING_DEFAULT ? 'block' : 'none';
@@ -1727,10 +1883,10 @@ function renderSummary() {
     : `<div class="sbox-value">—</div><div class="sbox-label">nadie</div>`;
 
   el.innerHTML = `<div class="summary-grid">
-    <div class="sbox"><div class="sbox-icon">🎮</div><div class="sbox-value">${total}</div><div class="sbox-label">Partidos</div></div>
-    <div class="sbox"><div class="sbox-icon">🍺</div>${lateDisplay}</div>
-    <div class="sbox"><div class="sbox-icon">⚽</div><div class="sbox-value">${totalGoals}</div><div class="sbox-label">Goles totales</div></div>
-    <div class="sbox"><div class="sbox-icon">⭐</div>${mvpDisplay}</div>
+    <div class="sbox"><div class="sbox-icon">${SVG_WHISTLE}</div><div class="sbox-value">${total}</div><div class="sbox-label">Partidos</div></div>
+    <div class="sbox"><div class="sbox-icon">${SVG_BEER}</div>${lateDisplay}</div>
+    <div class="sbox"><div class="sbox-icon">${SVG_BALL}</div><div class="sbox-value">${totalGoals}</div><div class="sbox-label">Goles totales</div></div>
+    <div class="sbox"><div class="sbox-icon">${SVG_STAR_LG}</div>${mvpDisplay}</div>
   </div>`;
 }
 
@@ -1823,7 +1979,7 @@ function renderWeeklyHighlights() {
       <div class="highlight-info">
         <div class="highlight-label">Llegaron tarde — ${lastDateStr}</div>
         ${lateLastMatch.map(({name, rec}) => {
-          const icon = rec.type === 'absent' ? '🚫' : rec.beers === 1 ? '🍺' : rec.beers === 2 ? '🍺🍺' : '🍺🍺🍺🍺';
+          const icon = rec.type === 'absent' ? SVG_X_C : rec.beers === 1 ? SVG_BEER : rec.beers === 2 ? `${SVG_BEER}<span style="font-size:0.7rem;font-weight:800">×2</span>` : `${SVG_BEER}<span style="font-size:0.7rem;font-weight:800">×4</span>`;
           return `<div style="display:flex;align-items:center;gap:8px;margin-top:5px">
             ${avatarHtml(name, 22)}
             <span style="font-size:0.82rem;font-weight:600;flex:1" onclick="openPlayer('${escJs(name)}')">${escHtml(name)}</span>
@@ -1848,28 +2004,28 @@ function renderWeeklyHighlights() {
 function renderHistorial() {
   const el = document.getElementById('matches-list');
   if (!db.matches.length) {
-    el.innerHTML = '<div class="empty"><div class="big">📋</div><p>No hay partidos registrados todavía.</p></div>';
+    el.innerHTML = `<div class="empty"><div class="big">${_i(`<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>`, 44)}</div><p>No hay partidos registrados todavía.</p></div>`;
     return;
   }
   el.innerHTML = [...db.matches]
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .map(m => {
       const w     = m.winner || 'draw';
-      const badge = w === 'a' ? '<span class="match-result-badge badge-win-a">🔵 Ganó Azul</span>'
-                  : w === 'b' ? '<span class="match-result-badge badge-win-b">🔴 Ganó Rojo</span>'
-                  : '<span class="match-result-badge badge-draw">🤝 Empate</span>';
-      const mvpBadge = m.mvp ? `<span class="match-result-badge" style="background:var(--gold-bg);color:var(--gold);border:1px solid rgba(245,158,11,0.3)">⭐ ${escHtml(m.mvp)}</span>` : '';
+      const badge = w === 'a' ? `<span class="match-result-badge badge-win-a" style="display:inline-flex;align-items:center;gap:4px">${DOT_BLUE} Ganó Azul</span>`
+                  : w === 'b' ? `<span class="match-result-badge badge-win-b" style="display:inline-flex;align-items:center;gap:4px">${DOT_RED} Ganó Rojo</span>`
+                  : `<span class="match-result-badge badge-draw" style="display:inline-flex;align-items:center;gap:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"/></svg>Empate</span>`;
+      const mvpBadge = m.mvp ? `<span class="match-result-badge" style="background:var(--gold-bg);color:var(--gold);border:1px solid rgba(245,158,11,0.3);display:inline-flex;align-items:center;gap:3px">${SVG_STAR_SM} ${escHtml(m.mvp)}</span>` : '';
       return `<div class="match-card" onclick="openMatchModal(${m.id})">
-        <div class="match-date">📅 ${formatDate(m.date)}</div>
+        <div class="match-date" style="display:flex;align-items:center;gap:5px">${SVG_CALENDAR} ${formatDate(m.date)}</div>
         <div class="match-score-row">
-          <div class="match-team left ${w==='a'?'winner':''}">${w==='a'?'🏆 ':''}Azul</div>
+          <div class="match-team left ${w==='a'?'winner':''}" style="display:flex;align-items:center;gap:4px">${DOT_BLUE}${w==='a'?SVG_TROPHY:''}Azul</div>
           <div class="match-score-num">vs</div>
-          <div class="match-team right ${w==='b'?'winner':''}">Rojo${w==='b'?' 🏆':''}</div>
+          <div class="match-team right ${w==='b'?'winner':''}" style="display:flex;align-items:center;gap:4px">${DOT_RED}Rojo${w==='b'?SVG_TROPHY:''}</div>
         </div>
         <div class="match-footer">
           ${badge}
           ${mvpBadge}
-          ${isAdmin ? `<button class="btn-danger" onclick="event.stopPropagation();deleteMatch(${m.id})">🗑</button>` : ''}
+          ${isAdmin ? `<button class="btn-danger" onclick="event.stopPropagation();deleteMatch(${m.id})">${SVG_TRASH}</button>` : ''}
         </div>
       </div>`;
     }).join('');
