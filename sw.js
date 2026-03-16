@@ -1,4 +1,4 @@
-const CACHE = 'futbol-elite-v10';
+const CACHE = 'futbol-elite-v11';
 const FILES = [
   '/futbol-viernes/',
   '/futbol-viernes/index.html',
