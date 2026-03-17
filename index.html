@@ -619,7 +619,8 @@
       padding: 10px 20px; border-radius: 22px;
       z-index: 200; pointer-events: none;
       opacity: 0; transition: opacity 0.2s, transform 0.2s;
-      white-space: nowrap;
+      white-space: nowrap; max-width: calc(100vw - 48px);
+      display: flex; align-items: center; gap: 6px;
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -653,6 +654,65 @@
     .rule-text { flex: 1; }
     .rule-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 3px; }
     .rule-desc  { font-size: 0.78rem; color: var(--text2); line-height: 1.5; }
+
+    /* ───── LARGE TAB HEADING (iOS style) ───── */
+    .tab-heading {
+      font-size: 1.75rem; font-weight: 800; letter-spacing: -0.5px;
+      margin: 0 0 18px; padding-top: 2px;
+    }
+
+    /* ───── SECTION LABEL (iOS separator) ───── */
+    .section-label {
+      display: block; font-size: 0.6rem; font-weight: 700;
+      color: var(--text3); text-transform: uppercase; letter-spacing: 0.9px;
+      padding: 18px 2px 8px;
+    }
+
+    /* ───── EMPTY STATE ───── */
+    .empty-state { text-align: center; padding: 48px 20px; }
+    .empty-state-icon { font-size: 3rem; margin-bottom: 14px; opacity: 0.55; }
+    .empty-state-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .empty-state-sub { font-size: 0.82rem; color: var(--text3); margin-bottom: 20px; line-height: 1.5; }
+
+    /* ───── MATCH CARD SCOREBOARD ───── */
+    .mc-scoreboard { display: flex; align-items: center; gap: 8px; padding: 10px 0 8px; }
+    .mc-team { flex: 1; display: flex; align-items: center; gap: 5px; font-size: 0.82rem; font-weight: 600; color: var(--text2); }
+    .mc-team.right { justify-content: flex-end; }
+    .mc-team.mc-winner { color: var(--text); font-weight: 800; }
+    .mc-score {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+      border-radius: 10px; padding: 6px 14px; flex-shrink: 0;
+    }
+    .mc-score span { font-size: 1.3rem; font-weight: 800; color: var(--text2); min-width: 18px; text-align: center; }
+    .mc-sep { font-size: 1rem !important; color: var(--text3) !important; min-width: unset !important; }
+    .mc-score-hi { color: var(--text) !important; }
+
+    /* ───── WIZARD FORM ───── */
+    .wizard-steps {
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 20px; padding: 4px 0;
+    }
+    .wstep {
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.76rem; font-weight: 800;
+      background: rgba(255,255,255,0.08); color: var(--text3);
+      border: 1.5px solid rgba(255,255,255,0.12);
+      transition: all 0.22s; flex-shrink: 0;
+    }
+    .wstep.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 0 0 4px var(--glow); }
+    .wstep.done   { background: var(--green);  color: #fff; border-color: var(--green); }
+    .wstep-line   { flex: 1; max-width: 44px; height: 1.5px; background: rgba(255,255,255,0.1); }
+    .wizard-nav { display: flex; gap: 10px; margin-top: 0; }
+    .btn-back {
+      flex: 0 0 auto; padding: 15px 18px; border-radius: 12px;
+      border: 1px solid var(--border); background: var(--card2);
+      color: var(--text2); font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-back:active { opacity: 0.6; }
+    .wizard-nav .btn-primary { flex: 1; }
   </style>
 </head>
 <body>
@@ -696,46 +756,64 @@
 
 <!-- ── RANKING ── -->
 <div id="tab-ranking" class="tab active">
+  <h1 class="tab-heading">Ranking</h1>
+  <span class="section-label" id="ranking-highlights-label" style="display:none">✨ Esta semana</span>
   <div class="card" id="ranking-highlights-card" style="display:none">
-    <div class="card-title">Highlights de la semana</div>
     <div id="ranking-highlights"></div>
   </div>
+  <span class="section-label">🏆 Victorias</span>
   <div class="card">
-    <div class="card-title">Más partidos ganados</div>
     <div id="wins-ranking"></div>
     <button class="expand-btn" id="wins-expand-btn" onclick="toggleRanking('wins')" style="display:none">Ver todos ▾</button>
   </div>
+  <span class="section-label">⚽ Goleadores</span>
   <div class="card">
-    <div class="card-title">Goleadores del año</div>
     <div id="goals-ranking"></div>
     <button class="expand-btn" id="goals-expand-btn" onclick="toggleRanking('goals')" style="display:none">Ver todos ▾</button>
   </div>
+  <span class="section-label">📊 Resumen</span>
   <div class="card">
-    <div class="card-title">Resumen</div>
     <div id="summary"></div>
   </div>
 </div>
 
 <!-- ── NUEVO PARTIDO ── -->
 <div id="tab-nuevo" class="tab">
+  <h1 class="tab-heading">Nuevo partido</h1>
   <div id="nuevo-locked" class="empty" style="display:none">
     <div class="big"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.4"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
     <p>Solo el admin puede cargar partidos.<br>Tocá el candado del encabezado para entrar.</p>
   </div>
   <div id="nuevo-content">
-  <div class="card">
-    <div class="card-title">Fecha del partido</div>
-    <div class="form-group">
-      <input type="date" id="match-date">
+  <!-- Step indicator -->
+  <div class="wizard-steps" id="wizard-steps">
+    <div class="wstep active" id="ws1">1</div>
+    <div class="wstep-line"></div>
+    <div class="wstep" id="ws2">2</div>
+    <div class="wstep-line"></div>
+    <div class="wstep" id="ws3">3</div>
+  </div>
+
+  <!-- Step 1: Fecha + Equipos -->
+  <div id="form-step-1">
+    <div class="card">
+      <div class="card-title">Fecha del partido</div>
+      <div class="form-group">
+        <input type="date" id="match-date">
+      </div>
     </div>
+    <div class="card">
+      <div class="card-title">Armar equipos</div>
+      <p class="hint">Tocá un jugador para asignarlo: ○ sin equipo → <span style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;vertical-align:middle"></span>Azul</span> → <span style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;vertical-align:middle"></span>Rojo</span> → ○</p>
+      <div class="players-pool" id="players-selector"></div>
+      <div id="teams-count" style="font-size:0.74rem;color:var(--text3);margin-top:6px"></div>
+    </div>
+    <button class="btn-primary" onclick="wizardNext()">Siguiente →</button>
+    <div class="spacer"></div>
   </div>
-  <div class="card">
-    <div class="card-title">Armar equipos</div>
-    <p class="hint">Tocá un jugador para asignarlo: ○ sin equipo → <span style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;vertical-align:middle"></span>Azul</span> → <span style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;vertical-align:middle"></span>Rojo</span> → ○</p>
-    <div class="players-pool" id="players-selector"></div>
-    <div id="teams-count" style="font-size:0.74rem;color:var(--text3);margin-top:6px"></div>
-  </div>
-  <div id="goals-section" style="display:none">
+
+  <!-- Step 2: Goles + Resultado -->
+  <div id="form-step-2" style="display:none">
     <div class="card">
       <div class="team-section-label a"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;vertical-align:middle;margin-right:5px"></span>Equipo Azul — Goles</div>
       <div id="team-a-counters"></div>
@@ -752,11 +830,23 @@
         <button id="btn-win-b"    class="winner-btn" onclick="selectWinner('b')" style="display:flex;align-items:center;justify-content:center;gap:6px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444"></span>Rojo</button>
       </div>
     </div>
+    <div class="wizard-nav">
+      <button class="btn-back" onclick="wizardBack()">← Volver</button>
+      <button class="btn-primary" onclick="wizardNext()">Siguiente →</button>
+    </div>
+    <div class="spacer"></div>
+  </div>
+
+  <!-- Step 3: MVP + Guardar -->
+  <div id="form-step-3" style="display:none">
     <div class="card">
       <div class="card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> MVP del partido <span style="color:var(--text3);font-weight:400;text-transform:none;font-size:0.72rem"> — opcional</span></div>
       <div class="mvp-selector" id="mvp-selector"></div>
     </div>
-    <button class="btn-primary" onclick="saveMatch()">Guardar partido ✓</button>
+    <div class="wizard-nav">
+      <button class="btn-back" onclick="wizardBack()">← Volver</button>
+      <button class="btn-primary" onclick="saveMatch()">Guardar partido ✓</button>
+    </div>
     <div class="spacer"></div>
   </div>
   </div><!-- /nuevo-content -->
@@ -764,6 +854,7 @@
 
 <!-- ── JUGADORES ── -->
 <div id="tab-jugadores" class="tab">
+  <h1 class="tab-heading">Jugadores</h1>
   <div class="card" id="add-player-card">
     <div class="card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="vertical-align:middle"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Agregar jugador</div>
     <div class="add-row">
@@ -791,11 +882,13 @@
 
 <!-- ── HISTORIAL ── -->
 <div id="tab-historial" class="tab">
+  <h1 class="tab-heading">Historial</h1>
   <div id="matches-list"></div>
 </div>
 
 <!-- ── REGLAS ── -->
 <div id="tab-reglas" class="tab">
+  <h1 class="tab-heading">Reglas</h1>
   <div class="card">
     <div class="card-title">Reglas del grupo</div>
     <div class="rule-item">
@@ -966,7 +1059,7 @@ let _toastTimer = null;
 function showToast(msg, duration = 2000) {
   const el = document.getElementById('toast');
   if (!el) return;
-  el.textContent = msg;
+  el.innerHTML = msg;
   el.classList.add('show');
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(() => el.classList.remove('show'), duration);
@@ -1067,6 +1160,18 @@ function playerColor(name) {
   return (_colorCache[name] = cols[Math.abs(h) % cols.length]);
 }
 
+const _gradientPairs = [
+  ['#e11d48','#9f1239'], ['#7c3aed','#4c1d95'], ['#0891b2','#164e63'],
+  ['#059669','#064e3b'], ['#d97706','#78350f'], ['#0369a1','#0c2461'],
+  ['#9333ea','#4a1272'], ['#0d9488','#134e4a']
+];
+function playerGradient(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+  const [c1, c2] = _gradientPairs[Math.abs(h) % _gradientPairs.length];
+  return `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
+}
+
 function avatarHtml(name, size, options) {
   size = size || 64;
   options = options || {};
@@ -1076,9 +1181,9 @@ function avatarHtml(name, size, options) {
     return `<img src="${photo}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;display:block;flex-shrink:0;${streakStyle}">`;
   }
   const initials = playerInitials(name);
-  const color    = playerColor(name);
+  const gradient = playerGradient(name);
   const fs       = Math.round(size * 0.36);
-  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:${fs}px;flex-shrink:0;${streakStyle}">${initials}</div>`;
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${gradient};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:${fs}px;flex-shrink:0;${streakStyle}">${initials}</div>`;
 }
 
 // ─────────────────────────────────────────
@@ -1447,12 +1552,12 @@ window.saveTardiness = function(name, type, beers) {
     haptic('medium');
     closeMatchModal();
     openPlayer(name);
-    setTimeout(() => showToast('Registro guardado ✓'), 350);
+    setTimeout(() => showToast('🍺 Llegada registrada'), 350);
   } else {
     haptic('light');
     closeMatchModal();
     openPlayer(name);
-    showToast('¡A tiempo! 👍', 1800);
+    showToast('✅ A tiempo registrado', 1800);
   }
 };
 
@@ -1618,13 +1723,13 @@ window.showTab = function(name, btn) {
 window.addPlayer = function() {
   const input = document.getElementById('new-player-name');
   const name  = input.value.trim();
-  if (!name || name.length < 2) { showToast('El nombre debe tener al menos 2 caracteres'); return; }
-  if (db.players.includes(name)) { showToast(`"${name}" ya existe`); return; }
+  if (!name || name.length < 2) { showToast('⚠️ El nombre debe tener al menos 2 caracteres'); return; }
+  if (db.players.includes(name)) { showToast(`⚠️ "${name}" ya existe`); return; }
   db.players.push(name);
   saveDB();
   input.value = '';
   haptic('medium');
-  showToast(`${name} agregado ✓`);
+  showToast(`👤 ${name} agregado`);
   renderPlayers();
 };
 
@@ -1655,12 +1760,48 @@ function renderPlayers() {
 //  NEW MATCH
 // ─────────────────────────────────────────
 let teamA = [], teamB = [], goalCounts = {}, selectedWinner = null, selectedMvp = null;
+let matchFormStep = 1;
+
+function _updateWizardUI() {
+  [1,2,3].forEach(n => {
+    const step = document.getElementById(`form-step-${n}`);
+    const dot  = document.getElementById(`ws${n}`);
+    if (step) step.style.display = n === matchFormStep ? '' : 'none';
+    if (dot) {
+      dot.classList.toggle('active', n === matchFormStep);
+      dot.classList.toggle('done',   n < matchFormStep);
+    }
+  });
+  const stepsEl = document.getElementById('wizard-steps');
+  if (stepsEl) stepsEl.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+window.wizardNext = function() {
+  if (matchFormStep === 1) {
+    if (!document.getElementById('match-date').value) { showToast('⚠️ Elegí una fecha primero'); return; }
+    if (!teamA.length || !teamB.length) { showToast('⚠️ Asigná jugadores a ambos equipos'); return; }
+    renderCounters();
+    renderMvpSelector();
+  }
+  if (matchFormStep === 2 && !selectedWinner) { showToast('⚠️ Seleccioná el resultado'); return; }
+  matchFormStep = Math.min(3, matchFormStep + 1);
+  haptic('light');
+  _updateWizardUI();
+};
+
+window.wizardBack = function() {
+  matchFormStep = Math.max(1, matchFormStep - 1);
+  haptic('light');
+  _updateWizardUI();
+};
 
 function initNewMatch() {
   teamA = []; teamB = []; goalCounts = {}; selectedWinner = null; selectedMvp = null;
+  matchFormStep = 1;
   document.getElementById('match-date').value = todayStr();
   renderPlayersSelector();
-  document.getElementById('goals-section').style.display = 'none';
+  document.querySelectorAll('.winner-btn').forEach(b => b.className = 'winner-btn');
+  _updateWizardUI();
 }
 
 function renderPlayersSelector() {
@@ -1696,14 +1837,7 @@ window.togglePlayer = function(i) {
 };
 
 function checkTeamsReady() {
-  const s = document.getElementById('goals-section');
-  if (teamA.length > 0 && teamB.length > 0) {
-    s.style.display = 'block';
-    renderCounters();
-    renderMvpSelector();
-  } else {
-    s.style.display = 'none';
-  }
+  // In wizard mode, sections are shown by step — no auto-reveal needed
 }
 
 function renderCounters() {
@@ -1761,9 +1895,9 @@ window.selectMvp = function(name) {
 
 window.saveMatch = function() {
   const date = document.getElementById('match-date').value;
-  if (!date)           { alert('Seleccioná una fecha.'); return; }
-  if (!teamA.length || !teamB.length) { alert('Armá los dos equipos.'); return; }
-  if (!selectedWinner) { alert('Seleccioná quién ganó.'); return; }
+  if (!date)           { showToast('⚠️ Elegí una fecha'); return; }
+  if (!teamA.length || !teamB.length) { showToast('⚠️ Armá los dos equipos'); return; }
+  if (!selectedWinner) { showToast('⚠️ Seleccioná quién ganó'); return; }
   const matchId = Date.now();
   const allPlayers = [...teamA, ...teamB];
   db.matches.push({
@@ -1775,7 +1909,7 @@ window.saveMatch = function() {
   });
   saveDB();
   haptic('heavy');
-  showToast('Partido guardado ✓');
+  showToast('✅ Partido guardado');
   initNewMatch();
   openRatingsModal(matchId, allPlayers);
 };
@@ -1825,14 +1959,19 @@ function renderGoalsRanking() {
   const sorted  = calcGoals();
   const visible = rankingExpanded.goals ? sorted : sorted.slice(0, RANKING_DEFAULT);
   const collapse = rankingExpanded.goals ? `<div class="collapse-link" onclick="toggleRanking('goals')">Ver menos ▴</div>` : '';
-  el.innerHTML = visible.map(([name, g], i) => `
-    <div class="ranking-item" onclick="openPlayer('${escJs(name)}')">
+  el.innerHTML = visible.map(([name, g], i) => {
+    const sz = i === 0 ? 40 : i === 1 ? 35 : i === 2 ? 32 : 30;
+    const rowBg = i === 0 ? 'background:rgba(245,158,11,0.07);border-radius:12px;margin:0 -4px;padding:12px 14px;'
+                : i === 1 ? 'background:rgba(100,116,139,0.06);border-radius:12px;margin:0 -4px;padding:10px 14px;'
+                : i === 2 ? 'background:rgba(146,64,14,0.06);border-radius:12px;margin:0 -4px;padding:8px 14px;'
+                : '';
+    return `<div class="ranking-item" style="${rowBg}" onclick="openPlayer('${escJs(name)}')">
       <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
-      ${avatarHtml(name, 32, {streak: hasFireStreak(name)})}
+      ${avatarHtml(name, sz, {streak: hasFireStreak(name)})}
       <div class="rank-name">${playerDisplay(name)}</div>
-      <div class="rank-value">${g} ${SVG_BALL}</div>
-    </div>
-  `).join('') + collapse;
+      <div class="rank-value"><span style="color:var(--accent2)">${g}</span> ${SVG_BALL}</div>
+    </div>`;
+  }).join('') + collapse;
   btn.style.display = !rankingExpanded.goals && sorted.length > RANKING_DEFAULT ? 'block' : 'none';
 }
 
@@ -1843,14 +1982,19 @@ function renderWinsRanking() {
   const sorted  = calcWins();
   const visible = rankingExpanded.wins ? sorted : sorted.slice(0, RANKING_DEFAULT);
   const collapse = rankingExpanded.wins ? `<div class="collapse-link" onclick="toggleRanking('wins')">Ver menos ▴</div>` : '';
-  el.innerHTML = visible.map(([name, w, played], i) => `
-    <div class="ranking-item" onclick="openPlayer('${escJs(name)}')">
+  el.innerHTML = visible.map(([name, w, played], i) => {
+    const sz = i === 0 ? 40 : i === 1 ? 35 : i === 2 ? 32 : 30;
+    const rowBg = i === 0 ? 'background:rgba(245,158,11,0.07);border-radius:12px;margin:0 -4px;padding:12px 14px;'
+                : i === 1 ? 'background:rgba(100,116,139,0.06);border-radius:12px;margin:0 -4px;padding:10px 14px;'
+                : i === 2 ? 'background:rgba(146,64,14,0.06);border-radius:12px;margin:0 -4px;padding:8px 14px;'
+                : '';
+    return `<div class="ranking-item" style="${rowBg}" onclick="openPlayer('${escJs(name)}')">
       <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
-      ${avatarHtml(name, 32, {streak: hasFireStreak(name)})}
+      ${avatarHtml(name, sz, {streak: hasFireStreak(name)})}
       <div class="rank-name">${playerDisplay(name)}</div>
-      <div class="rank-value">${w} ${SVG_TROPHY}</div>
-    </div>
-  `).join('') + collapse;
+      <div class="rank-value"><span style="color:var(--green)">${w}</span> ${SVG_TROPHY}</div>
+    </div>`;
+  }).join('') + collapse;
   btn.style.display = !rankingExpanded.wins && sorted.length > RANKING_DEFAULT ? 'block' : 'none';
 }
 
@@ -1990,11 +2134,14 @@ function renderWeeklyHighlights() {
     </div>`;
   }
 
+  const lbl = document.getElementById('ranking-highlights-label');
   if (html) {
     el.innerHTML = html;
     card.style.display = '';
+    if (lbl) lbl.style.display = '';
   } else {
     card.style.display = 'none';
+    if (lbl) lbl.style.display = 'none';
   }
 }
 
@@ -2004,23 +2151,34 @@ function renderWeeklyHighlights() {
 function renderHistorial() {
   const el = document.getElementById('matches-list');
   if (!db.matches.length) {
-    el.innerHTML = `<div class="empty"><div class="big">${_i(`<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>`, 44)}</div><p>No hay partidos registrados todavía.</p></div>`;
+    el.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon">🏟️</div>
+      <div class="empty-state-title">Sin partidos aún</div>
+      <div class="empty-state-sub">Registrá el primer partido del grupo<br>para ver el historial aquí.</div>
+      ${isAdmin ? `<button class="btn-sm" onclick="showTab('nuevo',document.querySelector('[data-tab=nuevo]'))">+ Registrar partido</button>` : ''}
+    </div>`;
     return;
   }
   el.innerHTML = [...db.matches]
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .map(m => {
-      const w     = m.winner || 'draw';
-      const badge = w === 'a' ? `<span class="match-result-badge badge-win-a" style="display:inline-flex;align-items:center;gap:4px">${DOT_BLUE} Ganó Azul</span>`
-                  : w === 'b' ? `<span class="match-result-badge badge-win-b" style="display:inline-flex;align-items:center;gap:4px">${DOT_RED} Ganó Rojo</span>`
-                  : `<span class="match-result-badge badge-draw" style="display:inline-flex;align-items:center;gap:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"/></svg>Empate</span>`;
-      const mvpBadge = m.mvp ? `<span class="match-result-badge" style="background:var(--gold-bg);color:var(--gold);border:1px solid rgba(245,158,11,0.3);display:inline-flex;align-items:center;gap:3px">${SVG_STAR_SM} ${escHtml(m.mvp)}</span>` : '';
+      const w      = m.winner || 'draw';
+      const scoreA = m.teamA.reduce((s,p) => s + ((m.goalCounts||{})[p]||0), 0);
+      const scoreB = m.teamB.reduce((s,p) => s + ((m.goalCounts||{})[p]||0), 0);
+      const badge  = w === 'a' ? `<span class="match-result-badge badge-win-a" style="display:inline-flex;align-items:center;gap:4px">${DOT_BLUE} Ganó Azul</span>`
+                   : w === 'b' ? `<span class="match-result-badge badge-win-b" style="display:inline-flex;align-items:center;gap:4px">${DOT_RED} Ganó Rojo</span>`
+                   : `<span class="match-result-badge badge-draw" style="display:inline-flex;align-items:center;gap:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"/></svg>Empate</span>`;
+      const mvpBadge = m.mvp ? `<span class="match-result-badge" style="background:var(--gold-bg);color:var(--gold);border:1px solid rgba(245,158,11,0.3);display:inline-flex;align-items:center;gap:3px">${SVG_STAR_SM} ${escHtml(m.mvp.split(' ')[0])}</span>` : '';
       return `<div class="match-card" onclick="openMatchModal(${m.id})">
         <div class="match-date" style="display:flex;align-items:center;gap:5px">${SVG_CALENDAR} ${formatDate(m.date)}</div>
-        <div class="match-score-row">
-          <div class="match-team left ${w==='a'?'winner':''}" style="display:flex;align-items:center;gap:4px">${DOT_BLUE}${w==='a'?SVG_TROPHY:''}Azul</div>
-          <div class="match-score-num">vs</div>
-          <div class="match-team right ${w==='b'?'winner':''}" style="display:flex;align-items:center;gap:4px">${DOT_RED}Rojo${w==='b'?SVG_TROPHY:''}</div>
+        <div class="mc-scoreboard">
+          <div class="mc-team ${w==='a'?'mc-winner':''}">${DOT_BLUE}<span>Azul</span>${w==='a'?SVG_TROPHY:''}</div>
+          <div class="mc-score">
+            <span class="${w==='a'?'mc-score-hi':''}">${scoreA}</span>
+            <span class="mc-sep">–</span>
+            <span class="${w==='b'?'mc-score-hi':''}">${scoreB}</span>
+          </div>
+          <div class="mc-team right ${w==='b'?'mc-winner':''}">${w==='b'?SVG_TROPHY:''}<span>Rojo</span>${DOT_RED}</div>
         </div>
         <div class="match-footer">
           ${badge}
@@ -2052,7 +2210,10 @@ function formatDate(str) {
 function posClass(pos) { return ['pos-1','pos-2','pos-3'][pos-1] || 'pos-other'; }
 
 function emptyRanking(msg) {
-  return `<p style="color:var(--text3);font-size:0.82rem;text-align:center;padding:16px 0">${msg}</p>`;
+  return `<div class="empty-state" style="padding:32px 16px">
+    <div class="empty-state-icon">⚽</div>
+    <div class="empty-state-sub">${msg}</div>
+  </div>`;
 }
 
 function escHtml(str) {
