@@ -411,45 +411,39 @@
     #screen-content { padding: 0 16px 32px; max-width: 520px; margin: 0 auto; }
 
     /* ───── PLAYER PROFILE ───── */
-    .profile-field-bg {
+    .profile-hero {
       position: relative;
-      background:
-        linear-gradient(to bottom, transparent 0%, transparent 35%, rgba(0,0,0,0.98) 82%, #000 100%),
-        url('https://media.footballgroundguide.com/main/2024/03/West-Ham-London-Stadium.jpg') center 50%/cover no-repeat;
-      background-color: #1a0a10;
-      min-height: 210px;
+      height: 200px;
       margin: 0 -16px;
       overflow: hidden;
+      background:
+        linear-gradient(to bottom, rgba(9,22,40,0) 15%, rgba(9,22,40,0.55) 65%, #091628 100%),
+        url('https://media.footballgroundguide.com/main/2024/03/West-Ham-London-Stadium.jpg') center 50%/cover no-repeat;
+      background-color: #091628;
     }
-    .field-svg {
-      position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
-    }
-    .profile-glass-card {
-      background: rgba(10,14,28,0.72);
-      backdrop-filter: blur(28px) saturate(160%);
-      -webkit-backdrop-filter: blur(28px) saturate(160%);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 18px;
-      padding: 14px 16px 12px;
-      margin: -115px 0 14px;
-      position: relative; z-index: 2;
+    .profile-header-info {
       text-align: center;
-      box-shadow:
-        0 2px 4px rgba(0,0,0,0.5),
-        0 8px 24px rgba(0,0,0,0.6),
-        inset 0 1px 0 rgba(255,255,255,0.13);
+      margin-top: -46px;
+      position: relative; z-index: 2;
+      padding-bottom: 18px;
     }
     .profile-avatar-wrap {
-      position: relative; display: inline-block; margin-bottom: 8px;
+      position: relative; display: inline-block;
+      margin-bottom: 10px;
+      border-radius: 50%;
+      box-shadow:
+        0 0 0 3.5px #091628,
+        0 0 0 6px rgba(255,255,255,0.16),
+        0 10px 32px rgba(0,0,0,0.6);
     }
     .avatar-edit-btn {
-      position: absolute; bottom: 2px; right: 2px;
-      width: 26px; height: 26px; border-radius: 50%;
-      background: var(--accent); border: 2px solid var(--bg);
+      position: absolute; bottom: 3px; right: 3px;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--accent); border: 2.5px solid #091628;
       color: #fff; font-size: 0.68rem;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
     }
-    .profile-name { font-size: 1.2rem; font-weight: 800; margin-bottom: 6px; }
+    .profile-name { font-size: 1.35rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.3px; }
 
     .badges-row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
     .badge-pill {
@@ -1292,21 +1286,10 @@ window.openPlayer = function(name) {
   const streakColor = s.streakType==='win' ? 'color:var(--green)' : s.streakType==='loss' ? 'color:var(--red)' : '';
 
   pushScreen(`
-    <div class="profile-field-bg">
-      <svg class="field-svg" viewBox="0 0 400 178" preserveAspectRatio="xMidYMid slice">
-        <rect x="12" y="10" width="376" height="158" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.8"/>
-        <line x1="200" y1="10" x2="200" y2="168" stroke="rgba(255,255,255,0.18)" stroke-width="1.8"/>
-        <circle cx="200" cy="89" r="50" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.8"/>
-        <circle cx="200" cy="89" r="4" fill="rgba(255,255,255,0.18)"/>
-        <rect x="12" y="50" width="68" height="78" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
-        <rect x="320" y="50" width="68" height="78" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
-        <rect x="12" y="68" width="30" height="42" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1.2"/>
-        <rect x="358" y="68" width="30" height="42" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1.2"/>
-      </svg>
-    </div>
-    <div class="profile-glass-card">
+    <div class="profile-hero"></div>
+    <div class="profile-header-info">
       <div class="profile-avatar-wrap">
-        ${avatarHtml(name, 58, {streak: s.streakType==='win' && s.streak >= 3})}
+        ${avatarHtml(name, 82, {streak: s.streakType==='win' && s.streak >= 3})}
         <button class="avatar-edit-btn" onclick="triggerPhoto('${escJs(name)}')">${SVG_CAMERA}</button>
       </div>
       <div class="profile-name">${playerDisplay(name)}</div>
@@ -1378,7 +1361,7 @@ window.openPlayer = function(name) {
   if (titleEl) {
     titleEl.textContent = playerDisplay(name);
     titleEl.classList.remove('visible');
-    const glassCard = document.querySelector('.profile-glass-card');
+    const glassCard = document.querySelector('.profile-header-info');
     if (glassCard) {
       profileObserver = new IntersectionObserver(
         ([entry]) => titleEl.classList.toggle('visible', !entry.isIntersecting),
