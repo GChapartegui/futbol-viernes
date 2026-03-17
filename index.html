@@ -69,16 +69,20 @@
     header h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
     header p  { font-size: 0.76rem; color: var(--accent2); margin-top: 3px; opacity: 0.75; }
 
-    /* ───── NAV (bottom, iOS 26 / B&W style) ───── */
+    /* ───── NAV (bottom, floating pill) ───── */
     nav {
       display: flex;
-      background: transparent;
-      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(10, 18, 46, 0.92);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.11);
+      border-radius: 30px;
       position: fixed;
-      bottom: 0; left: 0; right: 0;
+      bottom: max(14px, env(safe-area-inset-bottom));
+      left: 18px; right: 18px;
       z-index: 10;
-      padding: 10px 0;
-      padding-bottom: max(18px, env(safe-area-inset-bottom));
+      padding: 8px 0;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.45);
     }
     nav button {
       flex: 1;
@@ -167,6 +171,14 @@
       border-radius: 14px;
       padding: 14px 8px;
       text-align: center;
+      cursor: pointer;
+      transition: transform 0.12s, opacity 0.12s, background 0.12s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .sbox:active {
+      transform: scale(0.95);
+      opacity: 0.75;
+      background: rgba(255,255,255,0.12);
     }
     .sbox-icon  { font-size: 1.3rem; margin-bottom: 4px; }
     .sbox-value { font-size: 1.45rem; font-weight: 800; color: #ffffff; }
@@ -1842,6 +1854,11 @@ function renderWinsRanking() {
   btn.style.display = !rankingExpanded.wins && sorted.length > RANKING_DEFAULT ? 'block' : 'none';
 }
 
+function goToTab(name) {
+  const btn = document.querySelector(`#bottom-nav button[data-tab="${name}"]`);
+  if (btn) showTab(name, btn);
+}
+
 function renderSummary() {
   const el         = document.getElementById('summary');
   const total      = db.matches.length;
@@ -1866,10 +1883,10 @@ function renderSummary() {
     : `<div class="sbox-value">—</div><div class="sbox-label">nadie</div>`;
 
   el.innerHTML = `<div class="summary-grid">
-    <div class="sbox"><div class="sbox-icon">${SVG_WHISTLE}</div><div class="sbox-value">${total}</div><div class="sbox-label">Partidos</div></div>
-    <div class="sbox"><div class="sbox-icon">${SVG_BEER}</div>${lateDisplay}</div>
-    <div class="sbox"><div class="sbox-icon">${SVG_BALL}</div><div class="sbox-value">${totalGoals}</div><div class="sbox-label">Goles totales</div></div>
-    <div class="sbox"><div class="sbox-icon">${SVG_STAR_LG}</div>${mvpDisplay}</div>
+    <div class="sbox" onclick="goToTab('historial')"><div class="sbox-icon">${SVG_WHISTLE}</div><div class="sbox-value">${total}</div><div class="sbox-label">Partidos</div></div>
+    <div class="sbox" onclick="goToTab('jugadores')"><div class="sbox-icon">${SVG_BEER}</div>${lateDisplay}</div>
+    <div class="sbox" onclick="goToTab('ranking')"><div class="sbox-icon">${SVG_BALL}</div><div class="sbox-value">${totalGoals}</div><div class="sbox-label">Goles totales</div></div>
+    <div class="sbox" onclick="goToTab('ranking')"><div class="sbox-icon">${SVG_STAR_LG}</div>${mvpDisplay}</div>
   </div>`;
 }
 
