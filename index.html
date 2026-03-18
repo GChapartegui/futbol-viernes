@@ -13,6 +13,8 @@
   <!-- Firebase compat SDK — cloud auto-backup -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <!-- Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
     :root {
       --bg:        #091628;
@@ -744,6 +746,49 @@
     }
     .btn-back:active { opacity: 0.6; }
     .wizard-nav .btn-primary { flex: 1; }
+
+    /* ───── COUNTDOWN (Feature 2) ───── */
+    .nm-card { padding: 16px; margin-bottom: 14px; }
+    .nm-label { font-size: 0.58rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
+    .nm-clock { display: flex; align-items: center; gap: 6px; margin: 8px 0; }
+    .nm-unit { text-align: center; }
+    .nm-unit span { font-size: 2rem; font-weight: 800; color: var(--text); line-height: 1; display: block; }
+    .nm-unit small { font-size: 0.55rem; color: var(--text3); text-transform: uppercase; }
+    .nm-sep { font-size: 1.5rem; font-weight: 800; color: var(--text3); padding-bottom: 10px; }
+    .nm-date { font-size: 0.75rem; color: var(--text3); margin-top: 6px; }
+    .nm-clear { margin-top: 10px; font-size: 0.75rem; color: var(--red); background: none; border: none; cursor: pointer; padding: 0; }
+    .nm-empty { display: flex; align-items: center; gap: 8px; color: var(--text3); font-size: 0.85rem; cursor: pointer; padding: 4px 0; }
+    .nm-now { font-size: 1.1rem; font-weight: 800; color: var(--green); text-align: center; padding: 8px 0; }
+
+    /* ───── FILTER CHIPS + SEARCH (Features 4, 8, 9) ───── */
+    .filter-chips { display: flex; gap: 6px; overflow-x: auto; padding: 0 0 12px; scrollbar-width: none; }
+    .filter-chips::-webkit-scrollbar { display: none; }
+    .chip { flex-shrink: 0; padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text2); cursor: pointer; transition: all 0.15s; }
+    .chip-active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .year-chips { display: flex; gap: 6px; padding: 0 0 14px; flex-wrap: wrap; }
+    .search-bar-wrap { margin-bottom: 10px; }
+    .search-input { width: 100%; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--card2); color: var(--text); font-size: 0.9rem; outline: none; box-sizing: border-box; }
+    .search-input::placeholder { color: var(--text3); }
+    .search-input:focus { border-color: var(--accent); }
+
+    /* ───── BEER SCREEN (Feature 3) ───── */
+    .beer-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .beer-row:last-child { border-bottom: none; }
+    .beer-name { flex: 1; font-size: 0.9rem; font-weight: 600; color: var(--text); }
+    .beer-count { display: flex; align-items: center; gap: 5px; font-size: 0.88rem; }
+    .beer-count span { font-weight: 800; color: var(--gold); }
+
+    /* ───── HEAD TO HEAD (Feature 5) ───── */
+    .h2h-names { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+    .h2h-p { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; color: var(--text); text-align: center; }
+    .h2h-vs { font-size: 1.1rem; font-weight: 900; color: var(--text3); flex-shrink: 0; }
+    .player-pick-list { display: flex; flex-direction: column; }
+    .player-pick-row { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--text); }
+    .player-pick-row:last-child { border-bottom: none; }
+
+    /* ───── SHARE BUTTON (Feature 1) ───── */
+    .btn-icon-sm { background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-radius: 10px; padding: 7px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text2); }
+    .btn-icon-sm:active { opacity: 0.7; }
   </style>
 </head>
 <body>
@@ -788,6 +833,8 @@
 <!-- ── RANKING ── -->
 <div id="tab-ranking" class="tab active">
   <h1 class="tab-heading">Ranking</h1>
+  <div id="year-toggle-row" style="display:none"></div>
+  <div id="next-match-card" class="card nm-card" style="display:none"></div>
   <span class="section-label" id="ranking-highlights-label" style="display:none">✨ Esta semana</span>
   <div class="card" id="ranking-highlights-card" style="display:none">
     <div id="ranking-highlights"></div>
@@ -914,6 +961,10 @@
 <!-- ── HISTORIAL ── -->
 <div id="tab-historial" class="tab">
   <h1 class="tab-heading">Historial</h1>
+  <div class="search-bar-wrap">
+    <input type="search" class="search-input" id="historial-search" placeholder="Buscar jugador o fecha..." oninput="onHistorialSearch(this.value)">
+  </div>
+  <div id="historial-filters"></div>
   <div id="matches-list"></div>
 </div>
 
@@ -1011,6 +1062,10 @@
 // ─────────────────────────────────────────
 const STORAGE_KEY = 'futbol-elite-v1';
 let db = { players: [], matches: [], playerPhotos: {}, tardiness: {} };
+let _countdownInterval = null;
+let rankingYear = 'all';
+let historialFilter = null;
+let historialSearch = '';
 
 // Admin mode — solo el dueño puede editar
 const ADMIN_PIN = '1234'; // ← Cambiá esto por tu PIN secreto
@@ -1514,6 +1569,8 @@ window.openPlayer = function(name) {
       ${tardinessHtml}
     </div>
 
+    ${db.players.length > 1 ? `<button class="btn-secondary" style="width:100%;margin-top:8px;margin-bottom:16px" onclick="openH2HPicker('${escJs(name)}')">⚔️ Head to Head</button>` : ''}
+
     <div class="card-title" style="padding:4px 0 12px">Partidos recientes</div>
     ${recentHtml}
     <div class="spacer"></div>
@@ -1754,7 +1811,8 @@ window.showTab = function(name, btn) {
   document.getElementById('tab-' + name).classList.add('active');
   btn.classList.add('active');
   if (name === 'ranking')   { rankingExpanded.goals = false; rankingExpanded.wins = false; renderRanking(); }
-  if (name === 'historial') renderHistorial();
+  if (name !== 'ranking' && _countdownInterval) { clearInterval(_countdownInterval); _countdownInterval = null; }
+  if (name === 'historial') { renderHistorialFilters(); renderHistorial(); }
   if (name === 'jugadores') renderPlayers();
   if (name === 'nuevo') {
     document.getElementById('nuevo-locked').style.display  = isAdmin ? 'none' : 'block';
@@ -1956,6 +2014,11 @@ window.saveMatch = function() {
   saveDB();
   haptic('heavy');
   showToast('✅ Partido guardado');
+  if (typeof confetti === 'function') {
+    confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 } });
+    setTimeout(() => confetti({ particleCount: 60, spread: 100, origin: { y: 0.4 }, angle: 60 }), 300);
+    setTimeout(() => confetti({ particleCount: 60, spread: 100, origin: { y: 0.4 }, angle: 120 }), 300);
+  }
   initNewMatch();
   openRatingsModal(matchId, allPlayers);
 };
@@ -1967,31 +2030,125 @@ const RANKING_DEFAULT = 3;
 const rankingExpanded = { goals: false, wins: false };
 
 function renderRanking() {
+  renderNextMatch();
+  renderYearToggle();
   renderGoalsRanking();
   renderWinsRanking();
   renderSummary();
   renderWeeklyHighlights();
 }
 
-function calcGoals() {
+function calcGoals(year) {
   const g = {};
   db.players.forEach(p => { g[p] = 0; });
-  db.matches.forEach(m => {
-    Object.entries(m.goalCounts || {}).forEach(([p, v]) => { g[p] = (g[p] || 0) + v; });
-  });
+  db.matches
+    .filter(m => !year || year === 'all' || (m.date||'').startsWith(year))
+    .forEach(m => {
+      Object.entries(m.goalCounts || {}).forEach(([p, v]) => { g[p] = (g[p] || 0) + v; });
+    });
   return Object.entries(g).sort((a, b) => b[1] - a[1]);
 }
 
-function calcWins() {
+function calcWins(year) {
   const w = {}, pl = {};
   db.players.forEach(p => { w[p] = 0; pl[p] = 0; });
-  db.matches.forEach(m => {
-    [...m.teamA, ...m.teamB].forEach(p => { pl[p] = (pl[p]||0) + 1; });
-    if (!m.winner || m.winner === 'draw') return;
-    (m.winner === 'a' ? m.teamA : m.teamB).forEach(p => { w[p] = (w[p]||0) + 1; });
-  });
+  db.matches
+    .filter(m => !year || year === 'all' || (m.date||'').startsWith(year))
+    .forEach(m => {
+      [...m.teamA, ...m.teamB].forEach(p => { pl[p] = (pl[p]||0) + 1; });
+      if (!m.winner || m.winner === 'draw') return;
+      (m.winner === 'a' ? m.teamA : m.teamB).forEach(p => { w[p] = (w[p]||0) + 1; });
+    });
   return Object.entries(w).map(([p, v]) => [p, v, pl[p]||0]).sort((a, b) => b[1] - a[1]);
 }
+
+function renderYearToggle() {
+  const el = document.getElementById('year-toggle-row');
+  if (!el) return;
+  const years = [...new Set(db.matches.map(m => (m.date||'').slice(0,4)).filter(Boolean))].sort().reverse();
+  if (years.length < 2) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  el.innerHTML = `<div class="year-chips">
+    <button class="chip ${rankingYear==='all'?'chip-active':''}" onclick="setRankingYear('all')">Todo</button>
+    ${years.map(y => `<button class="chip ${rankingYear===y?'chip-active':''}" onclick="setRankingYear('${y}')">${y}</button>`).join('')}
+  </div>`;
+}
+
+window.setRankingYear = function(year) {
+  rankingYear = year;
+  renderRanking();
+};
+
+function renderNextMatch() {
+  const el = document.getElementById('next-match-card');
+  if (!el) return;
+  if (_countdownInterval) { clearInterval(_countdownInterval); _countdownInterval = null; }
+  if (!db.nextMatch) {
+    el.style.display = isAdmin ? '' : 'none';
+    el.innerHTML = isAdmin
+      ? `<div class="nm-empty" onclick="openSetNextMatch()"><span>📅</span><span>Fijar próximo partido</span></div>`
+      : '';
+    return;
+  }
+  el.style.display = '';
+  function tick() {
+    const target = new Date(`${db.nextMatch.date}T${db.nextMatch.time||'00:00'}`);
+    const diff = target - Date.now();
+    let inner;
+    if (diff <= 0) {
+      inner = `<div class="nm-now">⚽ ¡Hoy es el partido!</div>`;
+    } else {
+      const d = Math.floor(diff/864e5);
+      const h = Math.floor((diff%864e5)/36e5);
+      const mn = Math.floor((diff%36e5)/6e4);
+      const s = Math.floor((diff%6e4)/1e3);
+      inner = `<div>
+        <div class="nm-label">PRÓXIMO PARTIDO</div>
+        <div class="nm-clock">
+          <div class="nm-unit"><span>${String(d).padStart(2,'0')}</span><small>días</small></div>
+          <div class="nm-sep">:</div>
+          <div class="nm-unit"><span>${String(h).padStart(2,'0')}</span><small>hs</small></div>
+          <div class="nm-sep">:</div>
+          <div class="nm-unit"><span>${String(mn).padStart(2,'0')}</span><small>min</small></div>
+          <div class="nm-sep">:</div>
+          <div class="nm-unit"><span>${String(s).padStart(2,'0')}</span><small>seg</small></div>
+        </div>
+        <div class="nm-date">${db.nextMatch.date}${db.nextMatch.time ? ' · ' + db.nextMatch.time : ''}</div>
+        ${isAdmin ? `<button class="nm-clear" onclick="clearNextMatch()">Quitar</button>` : ''}
+      </div>`;
+    }
+    el.innerHTML = inner;
+  }
+  tick();
+  _countdownInterval = setInterval(tick, 1000);
+}
+
+window.openSetNextMatch = function() {
+  pushScreen(`<div class="screen-content">
+    <h2 class="screen-title">Próximo partido</h2>
+    <div class="field-group">
+      <label class="field-label">Fecha</label>
+      <input type="date" id="nm-date" class="input-field" value="${db.nextMatch ? db.nextMatch.date : ''}">
+    </div>
+    <div class="field-group" style="margin-top:12px">
+      <label class="field-label">Hora (opcional)</label>
+      <input type="time" id="nm-time" class="input-field" value="${db.nextMatch ? (db.nextMatch.time||'') : ''}">
+    </div>
+    <button class="btn-primary" style="margin-top:16px" onclick="saveNextMatch()">Guardar</button>
+  </div>`);
+};
+
+window.saveNextMatch = function() {
+  const date = document.getElementById('nm-date').value;
+  if (!date) { showToast('⚠️ Elegí una fecha'); return; }
+  db.nextMatch = { date, time: document.getElementById('nm-time').value };
+  saveDB(); renderNextMatch(); popScreen();
+  showToast('📅 Partido agendado');
+};
+
+window.clearNextMatch = function() {
+  db.nextMatch = null; saveDB(); renderNextMatch();
+};
 
 window.toggleRanking = function(type) {
   rankingExpanded[type] = !rankingExpanded[type];
@@ -2002,7 +2159,7 @@ function renderGoalsRanking() {
   const el  = document.getElementById('goals-ranking');
   const btn = document.getElementById('goals-expand-btn');
   if (!db.players.length) { el.innerHTML = emptyRanking('Cargá partidos para ver el ranking.'); btn.style.display = 'none'; return; }
-  const sorted  = calcGoals();
+  const sorted  = calcGoals(rankingYear);
   const visible = rankingExpanded.goals ? sorted : sorted.slice(0, RANKING_DEFAULT);
   const collapse = rankingExpanded.goals ? `<div class="collapse-link" onclick="toggleRanking('goals')">Ver menos ▴</div>` : '';
   el.innerHTML = visible.map(([name, g], i) => {
@@ -2025,7 +2182,7 @@ function renderWinsRanking() {
   const el  = document.getElementById('wins-ranking');
   const btn = document.getElementById('wins-expand-btn');
   if (!db.players.length) { el.innerHTML = emptyRanking('Cargá partidos para ver el ranking.'); btn.style.display = 'none'; return; }
-  const sorted  = calcWins();
+  const sorted  = calcWins(rankingYear);
   const visible = rankingExpanded.wins ? sorted : sorted.slice(0, RANKING_DEFAULT);
   const collapse = rankingExpanded.wins ? `<div class="collapse-link" onclick="toggleRanking('wins')">Ver menos ▴</div>` : '';
   el.innerHTML = visible.map(([name, w, played], i) => {
@@ -2074,11 +2231,86 @@ function renderSummary() {
 
   el.innerHTML = `<div class="summary-grid">
     <div class="sbox" onclick="goToTab('historial')"><div class="sbox-icon">${SVG_WHISTLE}</div><div class="sbox-value">${total}</div><div class="sbox-label">Partidos</div></div>
-    <div class="sbox" onclick="goToTab('jugadores')"><div class="sbox-icon">${SVG_BEER}</div>${lateDisplay}</div>
+    <div class="sbox" onclick="openBeersScreen()"><div class="sbox-icon">${SVG_BEER}</div>${lateDisplay}</div>
     <div class="sbox" onclick="goToTab('ranking')"><div class="sbox-icon">${SVG_BALL}</div><div class="sbox-value">${totalGoals}</div><div class="sbox-label">Goles totales</div></div>
     <div class="sbox" onclick="goToTab('ranking')"><div class="sbox-icon">${SVG_STAR_LG}</div>${mvpDisplay}</div>
   </div>`;
 }
+
+window.openBeersScreen = function() {
+  const deudors = db.players
+    .map(p => ({ name: p, beers: ((db.tardiness && db.tardiness[p]) || []).filter(e => e.type === 'beer').length }))
+    .filter(x => x.beers > 0)
+    .sort((a, b) => b.beers - a.beers);
+  const rows = deudors.length
+    ? deudors.map(d => `
+        <div class="beer-row" onclick="openPlayer('${escJs(d.name)}')">
+          ${avatarHtml(d.name, 36)}
+          <div class="beer-name">${playerDisplay(d.name)}</div>
+          <div class="beer-count">${'🍺'.repeat(Math.min(d.beers, 5))} <span>${d.beers}</span></div>
+        </div>`).join('')
+    : `<div class="empty-state" style="padding:40px 16px">
+         <div class="empty-state-icon">🍺</div>
+         <div class="empty-state-sub">Nadie debe cervezas todavía.</div>
+       </div>`;
+  pushScreen(`<div class="screen-content">
+    <h2 class="screen-title">Deuda de cervezas</h2>
+    <p class="screen-sub" style="margin-bottom:16px">Llegadas tarde = cervezas pendientes</p>
+    ${rows}
+  </div>`);
+};
+
+window.openH2HPicker = function(name1) {
+  const others = db.players.filter(p => p !== name1);
+  pushScreen(`<div class="screen-content">
+    <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:16px">Comparar con...</h2>
+    <div class="player-pick-list">
+      ${others.map(p => `<div class="player-pick-row" onclick="openHeadToHead('${escJs(name1)}','${escJs(p)}')">
+        ${avatarHtml(p, 36)}<span>${playerDisplay(p)}</span>
+      </div>`).join('')}
+    </div>
+  </div>`);
+};
+
+window.openHeadToHead = function(name1, name2) {
+  const together = db.matches.filter(m =>
+    [...m.teamA, ...m.teamB].includes(name1) && [...m.teamA, ...m.teamB].includes(name2)
+  );
+  let wins1 = 0, wins2 = 0, draws = 0, goals1 = 0, goals2 = 0;
+  together.forEach(m => {
+    const in1A = m.teamA.includes(name1), in2A = m.teamA.includes(name2);
+    const sameTeam = (in1A && in2A) || (!in1A && !in2A);
+    if (!sameTeam) {
+      if (m.winner === 'a') { if (in1A) wins1++; else wins2++; }
+      else if (m.winner === 'b') { if (!in1A) wins1++; else wins2++; }
+      else draws++;
+    }
+    goals1 += (m.goalCounts||{})[name1] || 0;
+    goals2 += (m.goalCounts||{})[name2] || 0;
+  });
+  pushScreen(`<div class="screen-content">
+    <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:16px">Head to Head</h2>
+    <div class="h2h-names">
+      <div class="h2h-p">${avatarHtml(name1, 44)}<span>${playerDisplay(name1)}</span></div>
+      <div class="h2h-vs">VS</div>
+      <div class="h2h-p">${avatarHtml(name2, 44)}<span>${playerDisplay(name2)}</span></div>
+    </div>
+    <div class="stats-card" style="margin-top:16px">
+      <div class="sc-stat"><div class="sc-val" style="color:var(--green)">${wins1}</div><div class="sc-lbl">Victorias</div></div>
+      <div class="sc-divider"></div>
+      <div class="sc-stat"><div class="sc-val">${draws}</div><div class="sc-lbl">Empates</div></div>
+      <div class="sc-divider"></div>
+      <div class="sc-stat"><div class="sc-val" style="color:var(--red)">${wins2}</div><div class="sc-lbl">Victorias</div></div>
+    </div>
+    <div class="stats-card" style="margin-top:10px">
+      <div class="sc-stat"><div class="sc-val" style="color:var(--accent2)">${goals1}</div><div class="sc-lbl">Goles</div></div>
+      <div class="sc-divider"></div>
+      <div class="sc-stat"><div class="sc-val">${together.length}</div><div class="sc-lbl">Juntos</div></div>
+      <div class="sc-divider"></div>
+      <div class="sc-stat"><div class="sc-val" style="color:var(--accent2)">${goals2}</div><div class="sc-lbl">Goles</div></div>
+    </div>
+  </div>`);
+};
 
 function renderWeeklyHighlights() {
   const card = document.getElementById('ranking-highlights-card');
@@ -2194,6 +2426,27 @@ function renderWeeklyHighlights() {
 // ─────────────────────────────────────────
 //  HISTORIAL
 // ─────────────────────────────────────────
+function renderHistorialFilters() {
+  const el = document.getElementById('historial-filters');
+  if (!el) return;
+  const players = [...new Set(db.matches.flatMap(m => [...m.teamA, ...m.teamB]))].sort();
+  el.innerHTML = `<div class="filter-chips">
+    <button class="chip ${!historialFilter?'chip-active':''}" onclick="setHistorialFilter(null)">Todos</button>
+    ${players.map(p => `<button class="chip ${historialFilter===p?'chip-active':''}" onclick="setHistorialFilter('${escJs(p)}')">${playerDisplay(p)}</button>`).join('')}
+  </div>`;
+}
+
+window.setHistorialFilter = function(name) {
+  historialFilter = name;
+  renderHistorialFilters();
+  renderHistorial();
+};
+
+window.onHistorialSearch = function(val) {
+  historialSearch = val.trim().toLowerCase();
+  renderHistorial();
+};
+
 function renderHistorial() {
   const el = document.getElementById('matches-list');
   if (!db.matches.length) {
@@ -2205,7 +2458,24 @@ function renderHistorial() {
     </div>`;
     return;
   }
-  el.innerHTML = [...db.matches]
+  let filtered = historialFilter
+    ? db.matches.filter(m => [...m.teamA, ...m.teamB].includes(historialFilter))
+    : [...db.matches];
+  if (historialSearch) {
+    filtered = filtered.filter(m =>
+      [...m.teamA, ...m.teamB].some(p => p.toLowerCase().includes(historialSearch)) ||
+      (m.date||'').includes(historialSearch)
+    );
+  }
+  if (!filtered.length) {
+    el.innerHTML = `<div class="empty-state" style="padding:32px 16px">
+      <div class="empty-state-icon">🔍</div>
+      <div class="empty-state-sub">No hay partidos que coincidan con la búsqueda.</div>
+    </div>`;
+    return;
+  }
+  const SVG_SHARE = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`;
+  el.innerHTML = [...filtered]
     .sort((a, b) => new Date(b.date) - new Date(a.date))
     .map(m => {
       const w      = m.winner || 'draw';
@@ -2216,7 +2486,10 @@ function renderHistorial() {
                    : `<span class="match-result-badge badge-draw" style="display:inline-flex;align-items:center;gap:4px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"/></svg>Empate</span>`;
       const mvpBadge = m.mvp ? `<span class="match-result-badge" style="background:var(--gold-bg);color:var(--gold);border:1px solid rgba(245,158,11,0.3);display:inline-flex;align-items:center;gap:3px">${SVG_STAR_SM} ${escHtml(m.mvp.split(' ')[0])}</span>` : '';
       return `<div class="match-card" onclick="openMatchModal(${m.id})">
-        <div class="match-date" style="display:flex;align-items:center;gap:5px">${SVG_CALENDAR} ${formatDate(m.date)}</div>
+        <div class="match-date" style="display:flex;align-items:center;justify-content:space-between">
+          <span style="display:flex;align-items:center;gap:5px">${SVG_CALENDAR} ${formatDate(m.date)}</span>
+          <button class="btn-icon-sm" onclick="event.stopPropagation();shareMatch(${m.id})" title="Compartir">${SVG_SHARE}</button>
+        </div>
         <div class="mc-scoreboard">
           <div class="mc-team ${w==='a'?'mc-winner':''}">${DOT_BLUE}<span>Azul</span>${w==='a'?SVG_TROPHY:''}</div>
           <div class="mc-score">
@@ -2234,6 +2507,49 @@ function renderHistorial() {
       </div>`;
     }).join('');
 }
+
+window.shareMatch = function(id) {
+  const m = db.matches.find(x => x.id === id);
+  if (!m) return;
+  const canvas = document.createElement('canvas');
+  canvas.width = 800; canvas.height = 420;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 800, 420);
+  grad.addColorStop(0, '#091628'); grad.addColorStop(1, '#0d1f3c');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 800, 420);
+  const sA = m.teamA.reduce((s,p) => s + ((m.goalCounts||{})[p]||0), 0);
+  const sB = m.teamB.reduce((s,p) => s + ((m.goalCounts||{})[p]||0), 0);
+  // Score numbers
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 100px -apple-system, system-ui, sans-serif';
+  ctx.fillStyle = m.winner === 'a' ? '#3b82f6' : '#94a3b8';
+  ctx.fillText(String(sA), 260, 230);
+  ctx.fillStyle = '#475569'; ctx.font = 'bold 60px -apple-system, system-ui, sans-serif';
+  ctx.fillText('–', 400, 220);
+  ctx.fillStyle = m.winner === 'b' ? '#ef4444' : '#94a3b8';
+  ctx.font = 'bold 100px -apple-system, system-ui, sans-serif';
+  ctx.fillText(String(sB), 540, 230);
+  // Team labels
+  ctx.font = 'bold 22px -apple-system, system-ui, sans-serif'; ctx.fillStyle = '#94a3b8';
+  ctx.fillText('AZUL', 260, 290); ctx.fillText('ROJO', 540, 290);
+  // Date
+  ctx.font = '16px -apple-system, system-ui, sans-serif'; ctx.fillStyle = '#64748b';
+  ctx.fillText(m.date || '', 400, 360);
+  // Branding
+  ctx.font = 'bold 14px -apple-system, system-ui, sans-serif'; ctx.fillStyle = '#334155';
+  ctx.fillText('Fútbol Elite', 400, 400);
+  canvas.toBlob(async function(blob) {
+    const file = new File([blob], 'partido.png', { type: 'image/png' });
+    const shareData = { title: `${sA} – ${sB} | Fútbol Elite`, files: [file] };
+    if (navigator.canShare && navigator.canShare(shareData)) {
+      try { await navigator.share(shareData); return; } catch(e) {}
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `partido-${m.date||'resultado'}.png`;
+    a.click();
+  }, 'image/png');
+};
 
 window.deleteMatch = function(id) {
   if (!confirm('¿Eliminar este partido? No se puede deshacer.')) return;
@@ -2318,6 +2634,7 @@ document.getElementById('import-input').addEventListener('change', function(e) {
     db = JSON.parse(saved);
     if (!db.playerPhotos) db.playerPhotos = {};
     if (!db.tardiness)    db.tardiness    = {};
+    if (!('nextMatch' in db)) db.nextMatch = null;
     ['Arman', 'Brunito'].forEach(p => {
       if (!db.players.includes(p)) db.players.push(p);
     });
@@ -2330,6 +2647,7 @@ document.getElementById('import-input').addEventListener('change', function(e) {
         db = cloudData;
         if (!db.playerPhotos) db.playerPhotos = {};
         if (!db.tardiness)    db.tardiness    = {};
+        if (!('nextMatch' in db)) db.nextMatch = null;
         localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
         setCloudStatus('ok');
       } else {
