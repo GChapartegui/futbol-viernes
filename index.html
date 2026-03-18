@@ -782,6 +782,10 @@
     .h2h-names { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
     .h2h-p { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; color: var(--text); text-align: center; }
     .h2h-vs { font-size: 1.1rem; font-weight: 900; color: var(--text3); flex-shrink: 0; }
+    .h2h-fab { display: flex; flex-direction: column; align-items: center; margin: 10px 0 16px; gap: 5px; }
+    .h2h-fab button { width: 54px; height: 54px; border-radius: 50%; background: rgba(255,255,255,0.07); border: 1px solid var(--border); font-size: 1.55rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: all 0.15s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
+    .h2h-fab button:active { transform: scale(0.88); background: rgba(255,255,255,0.13); }
+    .h2h-fab span { font-size: 0.6rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
     .player-pick-list { display: flex; flex-direction: column; }
     .player-pick-row { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--text); }
     .player-pick-row:last-child { border-bottom: none; }
@@ -1569,7 +1573,7 @@ window.openPlayer = function(name) {
       ${tardinessHtml}
     </div>
 
-    ${db.players.length > 1 ? `<button class="btn-secondary" style="width:100%;margin-top:8px;margin-bottom:16px" onclick="openH2HPicker('${escJs(name)}')">⚔️ Head to Head</button>` : ''}
+    ${db.players.length > 1 ? `<div class="h2h-fab"><button onclick="openH2HPicker('${escJs(name)}')">⚔️</button><span>Head to Head</span></div>` : ''}
 
     <div class="card-title" style="padding:4px 0 12px">Partidos recientes</div>
     ${recentHtml}
@@ -2238,24 +2242,32 @@ function renderSummary() {
 }
 
 window.openBeersScreen = function() {
-  const deudors = db.players
-    .map(p => ({ name: p, beers: ((db.tardiness && db.tardiness[p]) || []).filter(e => e.type === 'beer').length }))
+  const list = db.players
+    .map(p => {
+      const arr = (db.tardiness && db.tardiness[p]) || [];
+      const beers = arr.reduce((sum, e) => sum + (e.beers || 0), 0);
+      const lates = arr.filter(e => e.type !== 'on-time' && e.type !== 'absent').length;
+      return { name: p, beers, lates };
+    })
     .filter(x => x.beers > 0)
     .sort((a, b) => b.beers - a.beers);
-  const rows = deudors.length
-    ? deudors.map(d => `
+  const rows = list.length
+    ? list.map(d => `
         <div class="beer-row" onclick="openPlayer('${escJs(d.name)}')">
           ${avatarHtml(d.name, 36)}
-          <div class="beer-name">${playerDisplay(d.name)}</div>
+          <div class="beer-name">
+            ${playerDisplay(d.name)}
+            <div style="font-size:0.72rem;color:var(--text3);margin-top:2px">${d.lates} llegada${d.lates !== 1 ? 's' : ''} tarde</div>
+          </div>
           <div class="beer-count">${'🍺'.repeat(Math.min(d.beers, 5))} <span>${d.beers}</span></div>
         </div>`).join('')
     : `<div class="empty-state" style="padding:40px 16px">
-         <div class="empty-state-icon">🍺</div>
-         <div class="empty-state-sub">Nadie debe cervezas todavía.</div>
+         <div class="empty-state-icon">🎉</div>
+         <div class="empty-state-sub">¡Todos puntuales! Nadie debe cervezas.</div>
        </div>`;
   pushScreen(`<div class="screen-content">
-    <h2 class="screen-title">Deuda de cervezas</h2>
-    <p class="screen-sub" style="margin-bottom:16px">Llegadas tarde = cervezas pendientes</p>
+    <h2 class="screen-title">Cervezas acumuladas</h2>
+    <p class="screen-sub" style="margin-bottom:16px">Por llegadas tarde — toca un jugador para ver el historial</p>
     ${rows}
   </div>`);
 };
@@ -2279,11 +2291,12 @@ window.openHeadToHead = function(name1, name2) {
   let wins1 = 0, wins2 = 0, draws = 0, goals1 = 0, goals2 = 0;
   together.forEach(m => {
     const in1A = m.teamA.includes(name1), in2A = m.teamA.includes(name2);
-    const sameTeam = (in1A && in2A) || (!in1A && !in2A);
-    if (!sameTeam) {
-      if (m.winner === 'a') { if (in1A) wins1++; else wins2++; }
-      else if (m.winner === 'b') { if (!in1A) wins1++; else wins2++; }
-      else draws++;
+    if (!m.winner || m.winner === 'draw') { draws++; }
+    else {
+      const n1won = (m.winner === 'a' && in1A) || (m.winner === 'b' && !in1A);
+      const n2won = (m.winner === 'a' && in2A) || (m.winner === 'b' && !in2A);
+      if (n1won) wins1++;
+      if (n2won) wins2++;
     }
     goals1 += (m.goalCounts||{})[name1] || 0;
     goals2 += (m.goalCounts||{})[name2] || 0;
@@ -2511,33 +2524,92 @@ function renderHistorial() {
 window.shareMatch = function(id) {
   const m = db.matches.find(x => x.id === id);
   if (!m) return;
+  const W = 800, H = 500;
   const canvas = document.createElement('canvas');
-  canvas.width = 800; canvas.height = 420;
+  canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
-  const grad = ctx.createLinearGradient(0, 0, 800, 420);
+
+  // Background
+  const grad = ctx.createLinearGradient(0, 0, W, H);
   grad.addColorStop(0, '#091628'); grad.addColorStop(1, '#0d1f3c');
-  ctx.fillStyle = grad; ctx.fillRect(0, 0, 800, 420);
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+
+  // Subtle center divider
+  ctx.beginPath(); ctx.moveTo(W/2, 40); ctx.lineTo(W/2, 360);
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1; ctx.stroke();
+
   const sA = m.teamA.reduce((s,p) => s + ((m.goalCounts||{})[p]||0), 0);
   const sB = m.teamB.reduce((s,p) => s + ((m.goalCounts||{})[p]||0), 0);
-  // Score numbers
+
+  // Date at top
   ctx.textAlign = 'center';
-  ctx.font = 'bold 100px -apple-system, system-ui, sans-serif';
-  ctx.fillStyle = m.winner === 'a' ? '#3b82f6' : '#94a3b8';
-  ctx.fillText(String(sA), 260, 230);
-  ctx.fillStyle = '#475569'; ctx.font = 'bold 60px -apple-system, system-ui, sans-serif';
-  ctx.fillText('–', 400, 220);
-  ctx.fillStyle = m.winner === 'b' ? '#ef4444' : '#94a3b8';
-  ctx.font = 'bold 100px -apple-system, system-ui, sans-serif';
-  ctx.fillText(String(sB), 540, 230);
+  ctx.font = '14px system-ui, Arial, sans-serif'; ctx.fillStyle = '#475569';
+  ctx.fillText(m.date || '', W/2, 28);
+
   // Team labels
-  ctx.font = 'bold 22px -apple-system, system-ui, sans-serif'; ctx.fillStyle = '#94a3b8';
-  ctx.fillText('AZUL', 260, 290); ctx.fillText('ROJO', 540, 290);
-  // Date
-  ctx.font = '16px -apple-system, system-ui, sans-serif'; ctx.fillStyle = '#64748b';
-  ctx.fillText(m.date || '', 400, 360);
+  ctx.font = 'bold 11px system-ui, Arial, sans-serif';
+  ctx.fillStyle = m.winner === 'a' ? '#60a5fa' : '#475569';
+  ctx.fillText('AZUL', 200, 62);
+  ctx.fillStyle = m.winner === 'b' ? '#ef4444' : '#475569';
+  ctx.fillText('ROJO', 600, 62);
+
+  // Score numbers
+  ctx.font = 'bold 108px system-ui, Arial, sans-serif';
+  ctx.fillStyle = m.winner === 'a' ? '#60a5fa' : '#64748b';
+  ctx.fillText(String(sA), 200, 180);
+  ctx.fillStyle = '#334155'; ctx.font = 'bold 52px system-ui, Arial, sans-serif';
+  ctx.fillText('–', W/2, 160);
+  ctx.fillStyle = m.winner === 'b' ? '#ef4444' : '#64748b';
+  ctx.font = 'bold 108px system-ui, Arial, sans-serif';
+  ctx.fillText(String(sB), 600, 180);
+
+  // Separator line
+  ctx.beginPath(); ctx.moveTo(40, 208); ctx.lineTo(W-40, 208);
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 1; ctx.stroke();
+
+  // Player names — Team A (left)
+  ctx.font = '15px system-ui, Arial, sans-serif';
+  m.teamA.forEach((p, i) => {
+    const goals = (m.goalCounts||{})[p] || 0;
+    ctx.fillStyle = goals > 0 ? '#f1f5f9' : '#64748b';
+    ctx.textAlign = 'center';
+    const label = goals > 0 ? `${p}  x${goals}` : p;
+    ctx.fillText(label, 200, 238 + i * 26, 340);
+  });
+
+  // Player names — Team B (right)
+  m.teamB.forEach((p, i) => {
+    const goals = (m.goalCounts||{})[p] || 0;
+    ctx.fillStyle = goals > 0 ? '#f1f5f9' : '#64748b';
+    ctx.textAlign = 'center';
+    const label = goals > 0 ? `${p}  x${goals}` : p;
+    ctx.fillText(label, 600, 238 + i * 26, 340);
+  });
+
+  // MVP section
+  if (m.mvp) {
+    const bx = W/2 - 130, by = 370, bw = 260, bh = 54, r = 12;
+    ctx.fillStyle = 'rgba(245,158,11,0.09)';
+    ctx.strokeStyle = 'rgba(245,158,11,0.28)'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(bx+r, by); ctx.lineTo(bx+bw-r, by);
+    ctx.quadraticCurveTo(bx+bw, by, bx+bw, by+r);
+    ctx.lineTo(bx+bw, by+bh-r); ctx.quadraticCurveTo(bx+bw, by+bh, bx+bw-r, by+bh);
+    ctx.lineTo(bx+r, by+bh); ctx.quadraticCurveTo(bx, by+bh, bx, by+bh-r);
+    ctx.lineTo(bx, by+r); ctx.quadraticCurveTo(bx, by, bx+r, by); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 10px system-ui, Arial, sans-serif'; ctx.fillStyle = '#f59e0b';
+    ctx.fillText('MVP', W/2, 390);
+    ctx.font = 'bold 15px system-ui, Arial, sans-serif'; ctx.fillStyle = '#f1f5f9';
+    ctx.fillText(m.mvp, W/2, 410, 240);
+  }
+
   // Branding
-  ctx.font = 'bold 14px -apple-system, system-ui, sans-serif'; ctx.fillStyle = '#334155';
-  ctx.fillText('Fútbol Elite', 400, 400);
+  ctx.textAlign = 'center';
+  ctx.font = '11px system-ui, Arial, sans-serif'; ctx.fillStyle = '#1e293b';
+  ctx.fillText('Futbol Elite', W/2, H - 12);
+
   canvas.toBlob(async function(blob) {
     const file = new File([blob], 'partido.png', { type: 'image/png' });
     const shareData = { title: `${sA} – ${sB} | Fútbol Elite`, files: [file] };
@@ -2700,6 +2772,7 @@ document.getElementById('import-input').addEventListener('change', function(e) {
   const appEl = document.getElementById('app');
   appEl.addEventListener('touchstart', e => {
     if (overlay.classList.contains('active')) return;
+    if (e.target.closest('.filter-chips, .search-bar-wrap')) { tabSwiping = false; return; }
     tabSwipeX = e.touches[0].clientX;
     tabSwipeY = e.touches[0].clientY;
     tabSwiping = true;
