@@ -403,6 +403,19 @@
       backdrop-filter: blur(20px) saturate(150%);
       -webkit-backdrop-filter: blur(20px) saturate(150%);
       position: sticky; top: 0; z-index: 5;
+      transition: background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
+    }
+    .screen-header.transparent-mode {
+      background: transparent;
+      border-bottom-color: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    .screen-header.transparent-mode.scrolled {
+      background: rgba(9, 22, 40, 0.82);
+      border-bottom-color: rgba(255,255,255,0.07);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
     }
     .back-btn {
       background: rgba(255,255,255,0.1);
@@ -427,12 +440,12 @@
     /* ───── PLAYER PROFILE ───── */
     .profile-hero {
       position: relative;
-      height: 200px;
-      margin: 0 -16px;
+      height: calc(262px + env(safe-area-inset-top));
+      margin: calc(-62px - env(safe-area-inset-top)) -16px 0;
       overflow: hidden;
       background:
-        linear-gradient(to bottom, rgba(9,22,40,0) 15%, rgba(9,22,40,0.55) 65%, #091628 100%),
-        url('https://media.footballgroundguide.com/main/2024/03/West-Ham-London-Stadium.jpg') center 50%/cover no-repeat;
+        linear-gradient(to bottom, rgba(9,22,40,0) 30%, rgba(9,22,40,0.55) 70%, #091628 100%),
+        url('https://media.footballgroundguide.com/main/2024/03/West-Ham-London-Stadium.jpg') center 35%/cover no-repeat;
       background-color: #091628;
     }
     .profile-header-info {
@@ -772,20 +785,20 @@
     .search-input:focus { border-color: var(--accent); }
 
     /* ───── BEER SCREEN (Feature 3) ───── */
-    .beer-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .beer-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border2); cursor: pointer; transition: background 0.12s; }
     .beer-row:last-child { border-bottom: none; }
+    .beer-row:active { background: rgba(255,255,255,0.04); }
     .beer-name { flex: 1; font-size: 0.9rem; font-weight: 600; color: var(--text); }
-    .beer-count { display: flex; align-items: center; gap: 5px; font-size: 0.88rem; }
-    .beer-count span { font-weight: 800; color: var(--gold); }
+    .beer-badge { display: flex; align-items: center; gap: 5px; background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.22); border-radius: 16px; padding: 5px 11px; color: var(--gold); }
+    .beer-badge svg { opacity: 0.85; }
+    .beer-badge span { font-weight: 800; font-size: 0.88rem; }
 
     /* ───── HEAD TO HEAD (Feature 5) ───── */
     .h2h-names { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
     .h2h-p { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; color: var(--text); text-align: center; }
     .h2h-vs { font-size: 1.1rem; font-weight: 900; color: var(--text3); flex-shrink: 0; }
-    .h2h-fab { display: flex; flex-direction: column; align-items: center; margin: 10px 0 16px; gap: 5px; }
-    .h2h-fab button { width: 54px; height: 54px; border-radius: 50%; background: rgba(255,255,255,0.07); border: 1px solid var(--border); font-size: 1.55rem; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: all 0.15s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); }
-    .h2h-fab button:active { transform: scale(0.88); background: rgba(255,255,255,0.13); }
-    .h2h-fab span { font-size: 0.6rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .h2h-profile-btn { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14); font-size: 0.95rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: all 0.15s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.1); flex-shrink: 0; }
+    .h2h-profile-btn:active { transform: scale(0.85); background: rgba(255,255,255,0.15); }
     .player-pick-list { display: flex; flex-direction: column; }
     .player-pick-row { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 0.9rem; font-weight: 600; color: var(--text); }
     .player-pick-row:last-child { border-bottom: none; }
@@ -1380,6 +1393,8 @@ function pushScreen(html) {
   if (profileObserver) { profileObserver.disconnect(); profileObserver = null; }
   const titleEl = document.getElementById('screen-title');
   if (titleEl) { titleEl.textContent = ''; titleEl.classList.remove('visible'); }
+  const hdr = document.querySelector('.screen-header');
+  if (hdr) { hdr.classList.remove('transparent-mode', 'scrolled'); }
   document.getElementById('screen-content').innerHTML = html;
   document.getElementById('screen-overlay').classList.add('active');
   document.getElementById('screen-overlay').scrollTop = 0;
@@ -1499,7 +1514,10 @@ window.openPlayer = function(name) {
         ${avatarHtml(name, 82, {streak: s.streakType==='win' && s.streak >= 3})}
         <button class="avatar-edit-btn" onclick="triggerPhoto('${escJs(name)}')">${SVG_CAMERA}</button>
       </div>
-      <div class="profile-name">${playerDisplay(name)}</div>
+      <div style="display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px">
+        <div style="font-size:1.35rem;font-weight:800;letter-spacing:-0.3px">${playerDisplay(name)}</div>
+        ${db.players.length > 1 ? `<button class="h2h-profile-btn" onclick="openH2HPicker('${escJs(name)}')">⚔️</button>` : ''}
+      </div>
       ${badgesHtml}
     </div>
 
@@ -1573,14 +1591,17 @@ window.openPlayer = function(name) {
       ${tardinessHtml}
     </div>
 
-    ${db.players.length > 1 ? `<div class="h2h-fab"><button onclick="openH2HPicker('${escJs(name)}')">⚔️</button><span>Head to Head</span></div>` : ''}
 
     <div class="card-title" style="padding:4px 0 12px">Partidos recientes</div>
     ${recentHtml}
     <div class="spacer"></div>
   `);
 
-  // iOS-style: show player name in header when glass card scrolls out of view
+  // Make header transparent so stadium shows through from top
+  const hdr = document.querySelector('.screen-header');
+  if (hdr) { hdr.classList.add('transparent-mode'); hdr.classList.remove('scrolled'); }
+
+  // iOS-style: show player name + solidify header when avatar scrolls out of view
   const titleEl = document.getElementById('screen-title');
   if (titleEl) {
     titleEl.textContent = playerDisplay(name);
@@ -1588,7 +1609,10 @@ window.openPlayer = function(name) {
     const glassCard = document.querySelector('.profile-header-info');
     if (glassCard) {
       profileObserver = new IntersectionObserver(
-        ([entry]) => titleEl.classList.toggle('visible', !entry.isIntersecting),
+        ([entry]) => {
+          titleEl.classList.toggle('visible', !entry.isIntersecting);
+          if (hdr) hdr.classList.toggle('scrolled', !entry.isIntersecting);
+        },
         { root: document.getElementById('screen-overlay'), threshold: 0.15 }
       );
       profileObserver.observe(glassCard);
@@ -2252,24 +2276,26 @@ window.openBeersScreen = function() {
     .filter(x => x.beers > 0)
     .sort((a, b) => b.beers - a.beers);
   const rows = list.length
-    ? list.map(d => `
-        <div class="beer-row" onclick="openPlayer('${escJs(d.name)}')">
-          ${avatarHtml(d.name, 36)}
-          <div class="beer-name">
-            ${playerDisplay(d.name)}
-            <div style="font-size:0.72rem;color:var(--text3);margin-top:2px">${d.lates} llegada${d.lates !== 1 ? 's' : ''} tarde</div>
-          </div>
-          <div class="beer-count">${'🍺'.repeat(Math.min(d.beers, 5))} <span>${d.beers}</span></div>
-        </div>`).join('')
+    ? `<div class="card" style="padding:0;overflow:hidden">${
+        list.map(d => `
+          <div class="beer-row" onclick="openPlayer('${escJs(d.name)}')">
+            ${avatarHtml(d.name, 40)}
+            <div class="beer-name">
+              ${playerDisplay(d.name)}
+              <div style="font-size:0.72rem;color:var(--text3);margin-top:2px">${d.lates} llegada${d.lates !== 1 ? 's' : ''} tarde</div>
+            </div>
+            <div class="beer-badge">${SVG_BEER}<span>${d.beers}</span></div>
+          </div>`).join('')
+      }</div>`
     : `<div class="empty-state" style="padding:40px 16px">
          <div class="empty-state-icon">🎉</div>
          <div class="empty-state-sub">¡Todos puntuales! Nadie debe cervezas.</div>
        </div>`;
-  pushScreen(`<div class="screen-content">
-    <h2 class="screen-title">Cervezas acumuladas</h2>
-    <p class="screen-sub" style="margin-bottom:16px">Por llegadas tarde — toca un jugador para ver el historial</p>
+  pushScreen(`
+    <h2 style="font-size:1.2rem;font-weight:800;margin-bottom:4px">Cervezas acumuladas</h2>
+    <p style="font-size:0.73rem;color:var(--text3);margin-bottom:18px">Por llegadas tarde · tocá un jugador para ver el detalle</p>
     ${rows}
-  </div>`);
+  `);
 };
 
 window.openH2HPicker = function(name1) {
