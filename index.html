@@ -858,7 +858,7 @@
   <div class="card" id="ranking-highlights-card" style="display:none">
     <div id="ranking-highlights"></div>
   </div>
-  <span class="section-label">🏆 Victorias</span>
+  <span class="section-label">🏆 Puntos</span>
   <div class="card">
     <div id="wins-ranking"></div>
     <button class="expand-btn" id="wins-expand-btn" onclick="toggleRanking('wins')" style="display:none">Ver todos ▾</button>
@@ -2062,8 +2062,8 @@ const rankingExpanded = { goals: false, wins: false };
 function renderRanking() {
   renderNextMatch();
   renderYearToggle();
+  renderPointsRanking();
   renderGoalsRanking();
-  renderWinsRanking();
   renderSummary();
   renderWeeklyHighlights();
 }
@@ -2090,6 +2090,32 @@ function calcWins(year) {
       (m.winner === 'a' ? m.teamA : m.teamB).forEach(p => { w[p] = (w[p]||0) + 1; });
     });
   return Object.entries(w).map(([p, v]) => [p, v, pl[p]||0]).sort((a, b) => b[1] - a[1]);
+}
+
+function calcPoints(year) {
+  const pts = {};
+  db.players.forEach(p => { pts[p] = 0; });
+  db.matches
+    .filter(m => !year || year === 'all' || (m.date||'').startsWith(year))
+    .forEach(m => {
+      // Victoria = 3 pts
+      if (m.winner && m.winner !== 'draw') {
+        (m.winner === 'a' ? m.teamA : m.teamB).forEach(p => { pts[p] = (pts[p]||0) + 3; });
+      }
+      // MVP = 1 pt
+      if (m.mvp && pts[m.mvp] !== undefined) {
+        pts[m.mvp] = (pts[m.mvp]||0) + 1;
+      }
+      // Goleador del partido = 1 pt (el que más goles hizo, puede haber empate)
+      const goals = m.goalCounts || {};
+      const maxGoals = Math.max(0, ...Object.values(goals));
+      if (maxGoals > 0) {
+        Object.entries(goals).forEach(([p, g]) => {
+          if (g === maxGoals && pts[p] !== undefined) pts[p] = (pts[p]||0) + 1;
+        });
+      }
+    });
+  return Object.entries(pts).sort((a, b) => b[1] - a[1]);
 }
 
 function renderYearToggle() {
@@ -2208,14 +2234,14 @@ function renderGoalsRanking() {
   btn.style.display = !rankingExpanded.goals && sorted.length > RANKING_DEFAULT ? 'block' : 'none';
 }
 
-function renderWinsRanking() {
+function renderPointsRanking() {
   const el  = document.getElementById('wins-ranking');
   const btn = document.getElementById('wins-expand-btn');
   if (!db.players.length) { el.innerHTML = emptyRanking('Cargá partidos para ver el ranking.'); btn.style.display = 'none'; return; }
-  const sorted  = calcWins(rankingYear);
+  const sorted  = calcPoints(rankingYear);
   const visible = rankingExpanded.wins ? sorted : sorted.slice(0, RANKING_DEFAULT);
   const collapse = rankingExpanded.wins ? `<div class="collapse-link" onclick="toggleRanking('wins')">Ver menos ▴</div>` : '';
-  el.innerHTML = visible.map(([name, w, played], i) => {
+  el.innerHTML = visible.map(([name, pts], i) => {
     const sz = i === 0 ? 40 : i === 1 ? 35 : i === 2 ? 32 : 30;
     const rowBg = i === 0 ? 'background:rgba(245,158,11,0.07);border-radius:12px;margin:0 -4px;padding:12px 14px;'
                 : i === 1 ? 'background:rgba(100,116,139,0.06);border-radius:12px;margin:0 -4px;padding:10px 14px;'
@@ -2225,7 +2251,7 @@ function renderWinsRanking() {
       <div class="rank-pos ${posClass(i+1)}">${i+1}</div>
       ${avatarHtml(name, sz, {streak: hasFireStreak(name)})}
       <div class="rank-name">${playerDisplay(name)}</div>
-      <div class="rank-value"><span style="color:var(--green)">${w}</span> ${SVG_TROPHY}</div>
+      <div class="rank-value"><span style="color:var(--gold)">${pts}</span><span style="font-size:0.7rem;color:var(--text3);margin-left:3px">pts</span></div>
     </div>`;
   }).join('') + collapse;
   btn.style.display = !rankingExpanded.wins && sorted.length > RANKING_DEFAULT ? 'block' : 'none';
