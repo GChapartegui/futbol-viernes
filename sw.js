@@ -1,4 +1,4 @@
-const CACHE = 'futbol-elite-v25';
+const CACHE = 'futbol-elite-v26';
 const FILES = [
   '/futbol-viernes/',
   '/futbol-viernes/index.html',
@@ -13,9 +13,10 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.matchAll({ type: 'window', includeUncontrolled: true }))
+      .then(clients => Promise.all(clients.map(client => client.navigate(client.url))))
   );
   self.clients.claim();
 });
