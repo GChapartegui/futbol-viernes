@@ -797,12 +797,9 @@
     .search-input:focus { border-color: var(--accent); }
 
     /* ───── BEER SCREEN (Feature 3) ───── */
-    /* Quick action buttons on ranking tab */
-    .quick-actions { display: flex; gap: 12px; margin-bottom: 18px; }
-    .qa-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 9px; padding: 16px 8px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; cursor: pointer; color: var(--text); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08); transition: all 0.15s; }
-    .qa-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
-    .qa-icon { width: 46px; height: 46px; border-radius: 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; }
-    .qa-lbl { font-size: 0.76rem; font-weight: 600; color: var(--text2); }
+    /* Quick action icon buttons (next to Ranking title) */
+    .qa-icon-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: var(--text2); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .qa-icon-btn:active { transform: scale(0.88); background: rgba(255,255,255,0.15); }
 
     .beer-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border2); cursor: pointer; transition: background 0.12s; }
     .beer-row:last-child { border-bottom: none; }
@@ -864,16 +861,16 @@
 
 <!-- ── RANKING ── -->
 <div id="tab-ranking" class="tab active">
-  <h1 class="tab-heading">Ranking</h1>
-  <div class="quick-actions">
-    <button class="qa-btn" onclick="showTab('nuevo', null)">
-      <div class="qa-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
-      <span class="qa-lbl">Nuevo partido</span>
-    </button>
-    <button class="qa-btn" onclick="showTab('jugadores', null)">
-      <div class="qa-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0-3-3.85"/></svg></div>
-      <span class="qa-lbl">Jugadores</span>
-    </button>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+    <h1 style="font-size:1.75rem;font-weight:800;letter-spacing:-0.5px;margin:0;padding-top:2px">Ranking</h1>
+    <div style="display:flex;gap:8px">
+      <button class="qa-icon-btn" onclick="showTab('nuevo', null)" title="Nuevo partido">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      </button>
+      <button class="qa-icon-btn" onclick="showTab('jugadores', null)" title="Jugadores">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0-3-3.85"/></svg>
+      </button>
+    </div>
   </div>
   <div id="year-toggle-row" style="display:none"></div>
   <div id="next-match-card" class="card nm-card" style="display:none"></div>
