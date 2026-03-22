@@ -522,6 +522,16 @@
     .sc-val { font-size: 1.55rem; font-weight: 800; line-height: 1; color: var(--text); }
     .sc-lbl { font-size: 0.59rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.45px; margin-top: 5px; }
 
+    /* Points card in profile */
+    .pts-card { background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.18); border-radius: 18px; padding: 16px 18px; margin-bottom: 14px; display: flex; align-items: center; gap: 0; box-shadow: inset 0 1px 0 rgba(245,158,11,0.1); }
+    .pts-main { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 80px; padding-right: 16px; }
+    .pts-val { font-size: 2.4rem; font-weight: 900; color: var(--gold); line-height: 1; }
+    .pts-unit { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(245,158,11,0.55); margin-top: 4px; font-weight: 700; }
+    .pts-breakdown { flex: 1; border-left: 1px solid rgba(245,158,11,0.14); padding-left: 16px; display: flex; flex-direction: column; gap: 7px; }
+    .pts-row { display: flex; align-items: center; justify-content: space-between; }
+    .pts-row-cat { font-size: 0.74rem; color: var(--text3); }
+    .pts-row-val { font-size: 0.82rem; font-weight: 800; color: var(--gold); }
+
     /* Kept for rings section */
     .stat-val { font-size: 1.45rem; font-weight: 800; color: var(--text); }
     .stat-val.green { color: var(--green); }
@@ -1509,6 +1519,19 @@ window.openPlayer = function(name) {
     : '—';
   const streakColor = s.streakType==='win' ? 'color:var(--green)' : s.streakType==='loss' ? 'color:var(--red)' : '';
 
+  // Points calculation for this player
+  let winPts = 0, mvpCount = 0, scorerCount = 0;
+  db.matches.forEach(m => {
+    if (m.winner && m.winner !== 'draw') {
+      if ((m.winner === 'a' ? m.teamA : m.teamB).includes(name)) winPts += 3;
+    }
+    if (m.mvp === name) mvpCount++;
+    const goals = m.goalCounts || {};
+    const maxG = Math.max(0, ...Object.values(goals));
+    if (maxG > 0 && (goals[name] || 0) === maxG) scorerCount++;
+  });
+  const playerPts = winPts + mvpCount + scorerCount;
+
   pushScreen(`
     <div class="profile-hero"></div>
     <div class="profile-header-info">
@@ -1521,6 +1544,27 @@ window.openPlayer = function(name) {
         ${db.players.length > 1 ? `<button class="h2h-profile-btn" onclick="openH2HPicker('${escJs(name)}')">⚔️</button>` : ''}
       </div>
       ${badgesHtml}
+    </div>
+
+    <div class="pts-card">
+      <div class="pts-main">
+        <div class="pts-val">${playerPts}</div>
+        <div class="pts-unit">puntos</div>
+      </div>
+      <div class="pts-breakdown">
+        <div class="pts-row">
+          <span class="pts-row-cat">🏆 Victorias ×3</span>
+          <span class="pts-row-val">${winPts} pts</span>
+        </div>
+        <div class="pts-row">
+          <span class="pts-row-cat">⭐ MVP ×1</span>
+          <span class="pts-row-val">${mvpCount} pts</span>
+        </div>
+        <div class="pts-row">
+          <span class="pts-row-cat">⚽ Goleador ×1</span>
+          <span class="pts-row-val">${scorerCount} pts</span>
+        </div>
+      </div>
     </div>
 
     <div class="stats-card">
@@ -2208,7 +2252,7 @@ window.clearNextMatch = function() {
 
 window.toggleRanking = function(type) {
   rankingExpanded[type] = !rankingExpanded[type];
-  type === 'goals' ? renderGoalsRanking() : renderWinsRanking();
+  type === 'goals' ? renderGoalsRanking() : renderPointsRanking();
 };
 
 function renderGoalsRanking() {
