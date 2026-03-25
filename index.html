@@ -773,17 +773,20 @@
     .wizard-nav .btn-primary { flex: 1; }
 
     /* ───── COUNTDOWN (Feature 2) ───── */
-    .nm-card { padding: 16px; margin-bottom: 14px; }
-    .nm-label { font-size: 0.58rem; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
-    .nm-clock { display: flex; align-items: center; gap: 6px; margin: 8px 0; }
-    .nm-unit { text-align: center; }
-    .nm-unit span { font-size: 2rem; font-weight: 800; color: var(--text); line-height: 1; display: block; }
-    .nm-unit small { font-size: 0.55rem; color: var(--text3); text-transform: uppercase; }
-    .nm-sep { font-size: 1.5rem; font-weight: 800; color: var(--text3); padding-bottom: 10px; }
-    .nm-date { font-size: 0.75rem; color: var(--text3); margin-top: 6px; }
-    .nm-clear { margin-top: 10px; font-size: 0.75rem; color: var(--red); background: none; border: none; cursor: pointer; padding: 0; }
-    .nm-empty { display: flex; align-items: center; gap: 8px; color: var(--text3); font-size: 0.85rem; cursor: pointer; padding: 4px 0; }
-    .nm-now { font-size: 1.1rem; font-weight: 800; color: var(--green); text-align: center; padding: 8px 0; }
+    .nm-card { padding: 10px 14px; margin-bottom: 14px; }
+    .nm-row { display: flex; align-items: center; gap: 8px; }
+    .nm-icon { font-size: 1rem; flex-shrink: 0; }
+    .nm-label { font-size: 0.68rem; font-weight: 600; color: var(--text3); flex-shrink: 0; }
+    .nm-clock { display: flex; align-items: center; gap: 4px; flex: 1; }
+    .nm-unit { display: flex; align-items: baseline; gap: 1px; }
+    .nm-unit span { font-size: 0.9rem; font-weight: 800; color: var(--text); }
+    .nm-unit small { font-size: 0.6rem; color: var(--text3); margin-right: 3px; }
+    .nm-sep { font-size: 0.75rem; font-weight: 700; color: var(--text3); opacity: 0.4; }
+    .nm-date { font-size: 0.68rem; color: var(--text3); flex-shrink: 0; }
+    .nm-clear { font-size: 0.68rem; color: var(--text3); background: none; border: none; cursor: pointer; padding: 0; flex-shrink: 0; opacity: 0.55; }
+    .nm-clear:active { opacity: 1; color: var(--red); }
+    .nm-empty { display: flex; align-items: center; gap: 8px; color: var(--text3); font-size: 0.82rem; cursor: pointer; }
+    .nm-now { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 700; color: var(--green); }
 
     /* ───── FILTER CHIPS + SEARCH (Features 4, 8, 9) ───── */
     .filter-chips { display: flex; gap: 6px; overflow-x: auto; padding: 0 0 12px; scrollbar-width: none; }
@@ -2212,26 +2215,25 @@ function renderNextMatch() {
     let inner;
     if (diff <= 0) {
       if (_countdownInterval) { clearInterval(_countdownInterval); _countdownInterval = null; }
-      inner = `<div class="nm-now">⚽ ¡Hoy es el partido!</div>
-        ${isAdmin ? `<button class="nm-clear" onclick="clearNextMatch()">Quitar</button>` : ''}`;
+      inner = `<div class="nm-now">⚽ ¡Hoy es el partido!${isAdmin ? `<button class="nm-clear" onclick="clearNextMatch()" style="margin-left:10px">✕</button>` : ''}</div>`;
     } else {
       const d = Math.floor(diff/864e5);
       const h = Math.floor((diff%864e5)/36e5);
       const mn = Math.floor((diff%36e5)/6e4);
       const s = Math.floor((diff%6e4)/1e3);
-      inner = `<div>
-        <div class="nm-label">PRÓXIMO PARTIDO</div>
+      inner = `<div class="nm-row">
+        <span class="nm-icon">📅</span>
+        <span class="nm-label">Próximo</span>
         <div class="nm-clock">
-          <div class="nm-unit"><span>${String(d).padStart(2,'0')}</span><small>días</small></div>
-          <div class="nm-sep">:</div>
-          <div class="nm-unit"><span>${String(h).padStart(2,'0')}</span><small>hs</small></div>
-          <div class="nm-sep">:</div>
-          <div class="nm-unit"><span>${String(mn).padStart(2,'0')}</span><small>min</small></div>
-          <div class="nm-sep">:</div>
-          <div class="nm-unit"><span>${String(s).padStart(2,'0')}</span><small>seg</small></div>
+          ${d > 0 ? `<div class="nm-unit"><span>${d}</span><small>d</small></div><div class="nm-sep">·</div>` : ''}
+          <div class="nm-unit"><span>${String(h).padStart(2,'0')}</span><small>h</small></div>
+          <div class="nm-sep">·</div>
+          <div class="nm-unit"><span>${String(mn).padStart(2,'0')}</span><small>m</small></div>
+          <div class="nm-sep">·</div>
+          <div class="nm-unit"><span>${String(s).padStart(2,'0')}</span><small>s</small></div>
         </div>
-        <div class="nm-date">${db.nextMatch.date}${db.nextMatch.time ? ' · ' + db.nextMatch.time : ''}</div>
-        ${isAdmin ? `<button class="nm-clear" onclick="clearNextMatch()">Quitar</button>` : ''}
+        <span class="nm-date">${db.nextMatch.time || db.nextMatch.date}</span>
+        ${isAdmin ? `<button class="nm-clear" onclick="clearNextMatch()">✕</button>` : ''}
       </div>`;
     }
     el.innerHTML = inner;
