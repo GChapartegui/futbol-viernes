@@ -2202,12 +2202,18 @@ function renderNextMatch() {
     return;
   }
   el.style.display = '';
+  // Auto-clear if match was more than 1 day ago
+  const _target0 = new Date(`${db.nextMatch.date}T${db.nextMatch.time||'23:59'}`);
+  if (Date.now() - _target0 > 864e5) { db.nextMatch = null; saveDB(); renderNextMatch(); return; }
+
   function tick() {
     const target = new Date(`${db.nextMatch.date}T${db.nextMatch.time||'00:00'}`);
     const diff = target - Date.now();
     let inner;
     if (diff <= 0) {
-      inner = `<div class="nm-now">⚽ ¡Hoy es el partido!</div>`;
+      if (_countdownInterval) { clearInterval(_countdownInterval); _countdownInterval = null; }
+      inner = `<div class="nm-now">⚽ ¡Hoy es el partido!</div>
+        ${isAdmin ? `<button class="nm-clear" onclick="clearNextMatch()">Quitar</button>` : ''}`;
     } else {
       const d = Math.floor(diff/864e5);
       const h = Math.floor((diff%864e5)/36e5);
