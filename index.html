@@ -1259,7 +1259,7 @@ window.toggleAdmin = async function() {
   } else {
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
-      await fireAuth.signInWithPopup(provider);
+      fireAuth.signInWithRedirect(provider);
     } catch(e) { showToast(e.code || e.message || 'Error', 8000); console.error(e); }
   }
 };
@@ -2896,6 +2896,14 @@ document.getElementById('import-input').addEventListener('change', function(e) {
   document.getElementById('add-player-card').style.display = 'none';
   document.getElementById('import-btn').style.display      = 'none';
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+
+  // Manejar resultado del redirect de Google
+  if (fireAuth) {
+    fireAuth.getRedirectResult().catch(e => {
+      if (e.code) showToast(e.code, 8000);
+      console.error('Redirect result error:', e);
+    });
+  }
 
   // ── Swipe back from left edge on screen-overlay ──
   const overlay = document.getElementById('screen-overlay');
