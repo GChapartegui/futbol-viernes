@@ -1259,8 +1259,8 @@ window.toggleAdmin = async function() {
   } else {
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
-      await fireAuth.signInWithRedirect(provider);
-    } catch(e) { showToast('Error al iniciar sesión'); }
+      await fireAuth.signInWithPopup(provider);
+    } catch(e) { showToast(e.code || e.message || 'Error', 8000); console.error(e); }
   }
 };
 
