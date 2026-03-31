@@ -1,4 +1,4 @@
-const CACHE = 'futbol-elite-v32';
+const CACHE = 'futbol-elite-v33';
 const FILES = [
   '/futbol-viernes/',
   '/futbol-viernes/index.html',
@@ -22,6 +22,18 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+
+  // Never intercept Firebase Auth, Google APIs, or external requests
+  if (
+    url.pathname.startsWith('/__/auth/') ||
+    url.hostname.includes('googleapis.com') ||
+    url.hostname.includes('firebaseapp.com') ||
+    url.hostname.includes('gstatic.com') ||
+    url.hostname.includes('google.com') ||
+    url.origin !== self.location.origin
+  ) return;
+
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request))
   );
