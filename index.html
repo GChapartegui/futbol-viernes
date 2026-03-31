@@ -13,6 +13,7 @@
   <!-- Firebase compat SDK — cloud auto-backup -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <!-- Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
@@ -1110,8 +1111,10 @@ let historialFilter = null;
 let historialSearch = '';
 
 // Admin mode — solo el dueño puede editar
-const ADMIN_PIN = '1234'; // ← Cambiá esto por tu PIN secreto
+const ADMIN_UID = 'PENDIENTE'; // ← se reemplaza después del primer login
 let isAdmin = false;
+let currentUser = null;
+let fireAuth = null;
 
 // ─────────────────────────────────────────
 //  FIREBASE CLOUD AUTO-BACKUP
@@ -1130,6 +1133,16 @@ if (!FIREBASE_CONFIG.apiKey.startsWith('REEMPLAZAR')) {
   try {
     if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     fireDB = firebase.firestore();
+    fireAuth = firebase.auth();
+    fireAuth.onAuthStateChanged(user => {
+      currentUser = user;
+      isAdmin = !!(user && user.uid === ADMIN_UID);
+      updateLockBtn();
+      applyAdminUI();
+      if (user && ADMIN_UID === 'PENDIENTE') {
+        showToast(`Tu UID: ${user.uid}`, 12000);
+      }
+    });
   } catch(e) { console.warn('Firebase init error:', e); }
 }
 
@@ -1138,10 +1151,12 @@ async function saveToCloud() {
   setCloudStatus('syncing');
   try {
     await fireDB.collection('backups').doc('main').set({
-      players:   db.players,
-      matches:   db.matches,
-      tardiness: db.tardiness || {},
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      players:    db.players,
+      matches:    db.matches,
+      tardiness:  db.tardiness || {},
+      nextMatch:  db.nextMatch || null,
+      _savedAt:   Date.now(),
+      updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
     });
     setCloudStatus('ok');
   } catch(e) {
@@ -1237,25 +1252,36 @@ const SVG_TROPHY_LG = _i(`<path d="M6 3h12v10a6 6 0 0 1-12 0V3z"/><path d="M6 9H
 const DOT_BLUE = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;flex-shrink:0;vertical-align:middle"></span>`;
 const DOT_RED  = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;vertical-align:middle"></span>`;
 
-window.toggleAdmin = function() {
-  if (isAdmin) {
-    isAdmin = false;
-    document.getElementById('lock-btn').innerHTML = SVG_LOCKED;
-    document.getElementById('lock-btn').style.color = 'rgba(255,255,255,0.42)';
-    applyAdminUI();
+window.toggleAdmin = async function() {
+  if (!fireAuth) return;
+  if (currentUser) {
+    if (confirm('¿Cerrar sesión?')) await fireAuth.signOut();
   } else {
-    const pin = prompt('PIN de administrador:');
-    if (pin === null) return;
-    if (pin === ADMIN_PIN) {
-      isAdmin = true;
-      document.getElementById('lock-btn').innerHTML = SVG_UNLOCKED;
-      document.getElementById('lock-btn').style.color = 'rgba(255,255,255,0.92)';
-      applyAdminUI();
-    } else {
-      alert('PIN incorrecto.');
-    }
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      await fireAuth.signInWithRedirect(provider);
+    } catch(e) { showToast('Error al iniciar sesión'); }
   }
 };
+
+function updateLockBtn() {
+  const btn = document.getElementById('lock-btn');
+  if (!btn) return;
+  if (currentUser) {
+    if (isAdmin) {
+      btn.innerHTML = SVG_UNLOCKED;
+      btn.style.color = 'rgba(255,255,255,0.92)';
+    } else {
+      btn.innerHTML = currentUser.photoURL
+        ? `<img src="${currentUser.photoURL}" style="width:24px;height:24px;border-radius:50%;object-fit:cover">`
+        : SVG_UNLOCKED;
+      btn.style.color = 'var(--accent2)';
+    }
+  } else {
+    btn.innerHTML = SVG_LOCKED;
+    btn.style.color = 'rgba(255,255,255,0.42)';
+  }
+}
 
 function applyAdminUI() {
   document.getElementById('add-player-card').style.display = isAdmin ? '' : 'none';
@@ -2818,35 +2844,52 @@ document.getElementById('import-input').addEventListener('change', function(e) {
 //  INIT
 // ─────────────────────────────────────────
 (async function() {
+  // 1. Load localStorage immediately for instant render
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
-    db = JSON.parse(saved);
-    if (!db.playerPhotos) db.playerPhotos = {};
-    if (!db.tardiness)    db.tardiness    = {};
-    if (!('nextMatch' in db)) db.nextMatch = null;
-    ['Arman', 'Brunito'].forEach(p => {
-      if (!db.players.includes(p)) db.players.push(p);
-    });
-    saveDB();
-  } else {
-    if (fireDB) {
-      setCloudStatus('syncing');
-      const cloudData = await loadFromCloud();
-      if (cloudData && Array.isArray(cloudData.players) && Array.isArray(cloudData.matches)) {
+    try {
+      db = JSON.parse(saved);
+    } catch(e) { db = {}; }
+  }
+  if (!db.playerPhotos) db.playerPhotos = {};
+  if (!db.tardiness)    db.tardiness    = {};
+  if (!('nextMatch' in db)) db.nextMatch = null;
+  if (!db.players)  db.players  = [];
+  if (!db.matches)  db.matches  = [];
+
+  renderRanking(); // render immediately with whatever we have locally
+
+  // 2. Always check cloud — it's the source of truth
+  if (fireDB) {
+    setCloudStatus('syncing');
+    const cloudData = await loadFromCloud();
+    if (cloudData && Array.isArray(cloudData.players) && Array.isArray(cloudData.matches)) {
+      const localTime  = db._savedAt || 0;
+      const cloudTime  = cloudData._savedAt || 0;
+      const cloudWins  = cloudData.matches.length > db.matches.length
+                      || cloudTime > localTime;
+      if (cloudWins) {
+        const photos = db.playerPhotos; // keep local photos (not synced)
         db = cloudData;
-        if (!db.playerPhotos) db.playerPhotos = {};
-        if (!db.tardiness)    db.tardiness    = {};
-        if (!('nextMatch' in db)) db.nextMatch = null;
+        db.playerPhotos = photos;
+        if (!db.tardiness)         db.tardiness  = {};
+        if (!('nextMatch' in db))  db.nextMatch  = null;
         localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-        setCloudStatus('ok');
-      } else {
-        db = { players: [...DEFAULT_PLAYERS], matches: [], playerPhotos: {}, tardiness: {} };
-        setCloudStatus('error');
+        renderRanking(); // re-render with fresh cloud data
       }
+      setCloudStatus('ok');
+    } else if (!saved) {
+      // first ever open, no local and no cloud → use defaults
+      db = { players: [...DEFAULT_PLAYERS], matches: [], playerPhotos: {}, tardiness: {}, nextMatch: null };
+      renderRanking();
+      setCloudStatus('error');
     } else {
-      db = { players: [...DEFAULT_PLAYERS], matches: [], playerPhotos: {}, tardiness: {} };
-      setCloudStatus('none');
+      setCloudStatus('ok');
     }
+  } else if (!saved) {
+    db = { players: [...DEFAULT_PLAYERS], matches: [], playerPhotos: {}, tardiness: {}, nextMatch: null };
+    renderRanking();
+    setCloudStatus('none');
   }
   renderRanking();
   document.getElementById('match-date').value = todayStr();
