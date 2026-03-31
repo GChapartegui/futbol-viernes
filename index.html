@@ -1252,21 +1252,20 @@ const SVG_TROPHY_LG = _i(`<path d="M6 3h12v10a6 6 0 0 1-12 0V3z"/><path d="M6 9H
 const DOT_BLUE = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;flex-shrink:0;vertical-align:middle"></span>`;
 const DOT_RED  = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;vertical-align:middle"></span>`;
 
-window.toggleAdmin = async function() {
+window.toggleAdmin = function() {
   if (!fireAuth) { showToast('fireAuth no inicializado', 5000); return; }
   if (currentUser) {
-    if (confirm('¿Cerrar sesión?')) await fireAuth.signOut();
+    fireAuth.signOut();
+    return;
+  }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  const isMobile = /iphone|ipad|ipod|android/i.test(navigator.userAgent);
+  if (isMobile) {
+    fireAuth.signInWithRedirect(provider)
+      .catch(e => showToast(e.code || e.message, 8000));
   } else {
-    try {
-      showToast('Abriendo Google…', 3000);
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const isMobile = /iphone|ipad|ipod|android/i.test(navigator.userAgent);
-      if (isMobile) {
-        fireAuth.signInWithRedirect(provider);
-      } else {
-        fireAuth.signInWithPopup(provider);
-      }
-    } catch(e) { showToast(e.code || e.message || 'Error', 8000); console.error(e); }
+    fireAuth.signInWithPopup(provider)
+      .catch(e => showToast(e.code || e.message, 8000));
   }
 };
 
