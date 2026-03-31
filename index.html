@@ -13,7 +13,6 @@
   <!-- Firebase compat SDK — cloud auto-backup -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <!-- Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <style>
@@ -1111,10 +1110,8 @@ let historialFilter = null;
 let historialSearch = '';
 
 // Admin mode — solo el dueño puede editar
-const ADMIN_UID = 'PENDIENTE'; // ← se reemplaza después del primer login
+const ADMIN_PIN = '1234'; // ← cambiá esto por tu PIN secreto
 let isAdmin = false;
-let currentUser = null;
-let fireAuth = null;
 
 // ─────────────────────────────────────────
 //  FIREBASE CLOUD AUTO-BACKUP
@@ -1133,16 +1130,6 @@ if (!FIREBASE_CONFIG.apiKey.startsWith('REEMPLAZAR')) {
   try {
     if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     fireDB = firebase.firestore();
-    fireAuth = firebase.auth();
-    fireAuth.onAuthStateChanged(user => {
-      currentUser = user;
-      isAdmin = !!(user && user.uid === ADMIN_UID);
-      updateLockBtn();
-      applyAdminUI();
-      if (user && ADMIN_UID === 'PENDIENTE') {
-        showToast(`Tu UID: ${user.uid}`, 12000);
-      }
-    });
   } catch(e) { console.warn('Firebase init error:', e); }
 }
 
@@ -1253,40 +1240,24 @@ const DOT_BLUE = `<span style="display:inline-block;width:8px;height:8px;border-
 const DOT_RED  = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;vertical-align:middle"></span>`;
 
 window.toggleAdmin = function() {
-  if (!fireAuth) { showToast('fireAuth no inicializado', 5000); return; }
-  if (currentUser) {
-    fireAuth.signOut();
-    return;
-  }
-  const provider = new firebase.auth.GoogleAuthProvider();
-  const isMobile = /iphone|ipad|ipod|android/i.test(navigator.userAgent);
-  if (isMobile) {
-    fireAuth.signInWithRedirect(provider)
-      .catch(e => showToast(e.code || e.message, 8000));
+  if (isAdmin) {
+    isAdmin = false;
+    document.getElementById('lock-btn').innerHTML = SVG_LOCKED;
+    document.getElementById('lock-btn').style.color = 'rgba(255,255,255,0.42)';
+    applyAdminUI();
   } else {
-    fireAuth.signInWithPopup(provider)
-      .catch(e => showToast(e.code || e.message, 8000));
+    const pin = prompt('PIN de administrador:');
+    if (pin === null) return;
+    if (pin === ADMIN_PIN) {
+      isAdmin = true;
+      document.getElementById('lock-btn').innerHTML = SVG_UNLOCKED;
+      document.getElementById('lock-btn').style.color = 'rgba(255,255,255,0.92)';
+      applyAdminUI();
+    } else {
+      showToast('PIN incorrecto');
+    }
   }
 };
-
-function updateLockBtn() {
-  const btn = document.getElementById('lock-btn');
-  if (!btn) return;
-  if (currentUser) {
-    if (isAdmin) {
-      btn.innerHTML = SVG_UNLOCKED;
-      btn.style.color = 'rgba(255,255,255,0.92)';
-    } else {
-      btn.innerHTML = currentUser.photoURL
-        ? `<img src="${currentUser.photoURL}" style="width:24px;height:24px;border-radius:50%;object-fit:cover">`
-        : SVG_UNLOCKED;
-      btn.style.color = 'var(--accent2)';
-    }
-  } else {
-    btn.innerHTML = SVG_LOCKED;
-    btn.style.color = 'rgba(255,255,255,0.42)';
-  }
-}
 
 function applyAdminUI() {
   document.getElementById('add-player-card').style.display = isAdmin ? '' : 'none';
@@ -2902,13 +2873,6 @@ document.getElementById('import-input').addEventListener('change', function(e) {
   document.getElementById('import-btn').style.display      = 'none';
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 
-  // Manejar resultado del redirect de Google
-  if (fireAuth) {
-    fireAuth.getRedirectResult().catch(e => {
-      if (e.code) showToast(e.code, 8000);
-      console.error('Redirect result error:', e);
-    });
-  }
 
   // ── Swipe back from left edge on screen-overlay ──
   const overlay = document.getElementById('screen-overlay');
